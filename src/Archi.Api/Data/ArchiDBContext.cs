@@ -1,4 +1,5 @@
-﻿using Archi.library.Data;
+﻿using Archi.Api.Models;
+using Archi.library.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,8 @@ namespace Archi.Api.Data
         public ArchiDBContext(DbContextOptions options):base(options)
         {
         }
+
+        public DbSet<Customer> Customers { get; set; }
 
     }
 }
