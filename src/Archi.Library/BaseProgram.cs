@@ -10,15 +10,20 @@ namespace Archi.Library
 {
     public class BaseProgram<TStartup> where TStartup : BaseStartup
     {
-        public static void StartupApp(string[] args, IConfigurationRoot configuration)
+        public static void StartupApp(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(configuration)
-                .CreateLogger();
+              .WriteTo.Debug()
+              .WriteTo.Console()
+              .CreateBootstrapLogger();
+
+            Log.Information("Starting up!");
+
             try
             {
-                Log.Information("Application starting up");
                 CreateHostBuilder(args).Build().Run();
+
+                Log.Information("Stopped cleanly");
             }
             catch (Exception ex)
             {
@@ -33,7 +38,8 @@ namespace Archi.Library
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
            Host.CreateDefaultBuilder(args)
-               .UseSerilog()
+               .UseSerilog((context, services, configuration) => configuration
+                    .ReadFrom.Configuration(context.Configuration))
                .ConfigureWebHostDefaults(webBuilder =>
                {
                    webBuilder.UseStartup<TStartup>();

@@ -7,13 +7,7 @@ namespace Archi.Api
     {
         public static void Main(string[] args)
         {
-            var configuration = new ConfigurationBuilder()
-               .AddJsonFile("appsettings.Development.json")
-               .Build();
-
-            BaseProgram<Startup>.StartupApp(args, configuration);
-        }
-
-       
+            BaseProgram<Startup>.StartupApp(args);
+        } 
     }
 }
