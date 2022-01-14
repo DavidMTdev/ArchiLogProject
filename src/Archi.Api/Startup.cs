@@ -1,4 +1,5 @@
 using Archi.Api.Data;
+using Archi.Api.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -8,51 +9,46 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Archi.Library;
 
 namespace Archi.Api
 {
-    public class Startup
+    public class Startup : BaseStartup
     {
-        public Startup(IConfiguration configuration)
+
+        public Startup(IConfiguration options) : base(options) {}
+
+        public override void ConfigServices(IServiceCollection services)
         {
-            Configuration = configuration;
-        }
-
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers();
-            services.AddApiVersioning();
-
             services.AddDbContext<ArchiDBContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("Archi"));
             });
+
+            services.AddSwaggerGen(x =>
+            {
+                x.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public override void ConfigOptions(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            var swaggerOptions = new SwaggerOptions();
+            Configuration.GetSection(nameof(SwaggerOptions)).Bind(swaggerOptions);
+
+            app.UseSwagger(option =>
             {
-                app.UseDeveloperExceptionPage();
-            }
+                option.RouteTemplate = swaggerOptions.JsonRoute;
+            });
 
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
+            app.UseSwaggerUI(option =>
             {
-                endpoints.MapControllers();
+                option.SwaggerEndpoint(swaggerOptions.UiEndpoint, swaggerOptions.Description);
             });
         }
     }
