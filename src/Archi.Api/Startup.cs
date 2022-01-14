@@ -28,6 +28,7 @@ namespace Archi.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddApiVersioning();
 
             services.AddDbContext<ArchiDBContext>(options =>
             {
