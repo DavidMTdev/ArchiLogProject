@@ -1,4 +1,5 @@
 using Archi.Api.Data;
+using Archi.Api.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +31,10 @@ namespace Archi.Api
         {
             services.AddControllers();
             services.AddApiVersioning();
+            services.AddSwaggerGen(x => 
+            {
+                x.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1"  });
+            });
 
             services.AddDbContext<ArchiDBContext>(options =>
             {
@@ -43,6 +49,19 @@ namespace Archi.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            var swaggerOptions = new SwaggerOptions();
+            Configuration.GetSection(nameof(SwaggerOptions)).Bind(swaggerOptions);
+
+            app.UseSwagger(option =>
+            {
+                option.RouteTemplate = swaggerOptions.JsonRoute;
+            });
+
+            app.UseSwaggerUI(option =>
+            {
+                option.SwaggerEndpoint(swaggerOptions.UiEndpoint, swaggerOptions.Description);
+            });
 
             app.UseHttpsRedirection();
 
