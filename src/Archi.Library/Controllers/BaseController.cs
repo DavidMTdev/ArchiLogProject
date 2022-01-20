@@ -30,9 +30,9 @@ namespace Archi.library.Controllers
         {
             var result2 = _context.Set<TModel>().Where(x => x.Active == true);
 
-            result2.Sort(param);
+            var resultOrd = result2.Sort(param);
 
-            return await result2.ToListAsync();
+            return await resultOrd.ToListAsync();
         }
 
         // GET:/[controller]/id
