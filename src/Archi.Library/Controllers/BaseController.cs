@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Archi.Library.Models;
+using Archi.Library.Extensions;
 
 namespace Archi.library.Controllers
 {
@@ -25,9 +26,13 @@ namespace Archi.library.Controllers
 
         // GET:/[controller]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TModel>>> GetAll()
+        public async Task<ActionResult<IEnumerable<TModel>>> GetAll([FromQuery] Params param)
         {
-            return await _context.Set<TModel>().Where(x => x.Active == true).ToListAsync();
+            var result2 = _context.Set<TModel>().Where(x => x.Active == true);
+
+            result2.Sort(param);
+
+            return await result2.ToListAsync();
         }
 
         // GET:/[controller]/id
