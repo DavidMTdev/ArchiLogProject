@@ -29,8 +29,10 @@ namespace Archi.library.Controllers
         public async Task<ActionResult<IEnumerable<TModel>>> GetAll([FromQuery] Params param)
         {
             var result2 = _context.Set<TModel>().Where(x => x.Active == true);
-
-            var resultOrd = result2.Sort(param);
+            // var indexAsc = this.Request.QueryString.Value.IndexOf("Asc", 0);
+            // var indexDesc = this.Request.QueryString.Value.IndexOf("Desc", 0);
+            var order = (this.Request.QueryString.Value.ToLower().IndexOf("asc", 0) < this.Request.QueryString.Value.ToLower().IndexOf("desc", 0)) ? true : false;
+            var resultOrd = result2.Sort(param, order);
 
             return await resultOrd.ToListAsync();
         }
