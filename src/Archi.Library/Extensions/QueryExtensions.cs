@@ -15,8 +15,8 @@ namespace Archi.Library.Extensions
         {
             if (param.HasOrder())
             {
-                string[] champsDesc = order == "ascToDesc" || order == "descToAsc" || order == "desc" ? param.Desc.Split(",") : new string[] { }; // new string[] { };
-                string[] champsAsc = order == "descToAsc" || order == "ascToDesc" || order == "asc" ? param.Asc.Split(",") : new string[] { }; // param.Asc.Split(",");
+                string[] champsDesc = order != "asc" ? param.Desc.Split(",") : new string[] { }; // new string[] { };
+                string[] champsAsc = order != "desc" ? param.Asc.Split(",") : new string[] { }; // param.Asc.Split(",");
 
                 if (order == "ascToDesc" || order == "asc")
                 {
