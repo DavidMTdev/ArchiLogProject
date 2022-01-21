@@ -47,16 +47,11 @@ namespace Archi.Library.Extensions
                 string first = (SkipValue != 0) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue-1).ToString(), "first") + ", ": "";
                 string next = (int.Parse(RangeSplit[1]) != MaxRange) ? URL + getRel(QueryString,RangeSplit[0],RangeSplit[1],(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) ? MaxRange.ToString() : (int.Parse(RangeSplit[1]) + RangeValue).ToString(),"next") + ", ": "";
                 string last = (int.Parse(RangeSplit[1]) != MaxRange) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") : "" ;
-                string prev = (SkipValue != 0) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 ? (SkipValue - RangeValue - 1).ToString(): "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "" ) : "";
-
-                if (RangeValue < 50)
-                {
-                    response.Headers.Add("Content-Range", $"{Range}/{MaxRange}");
-                    response.Headers.Add("Accept-Range", $"Product 50");
-                    response.Headers.Add("Link", $"{first}{prev}{next}{last}");
-
-                    return query.Skip(SkipValue).Take(RangeValue);
-                }
+                string prev = (SkipValue != 0) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 ? (SkipValue - RangeValue - 1).ToString() : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "") : "";
+                response.Headers.Add("Content-Range", $"{Range}/{MaxRange}");
+                response.Headers.Add("Accept-Range", $"Product 50");
+                response.Headers.Add("Link", $"{first}{prev}{next}{last}");
+                return query.Skip(SkipValue).Take(RangeValue);
             }
             return (IQueryable<TModel>)query;
         }

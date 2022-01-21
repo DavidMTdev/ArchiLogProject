@@ -34,10 +34,13 @@ namespace Archi.library.Controllers
 
             var resultOrd = result2.Sort(param);
             string Range = param.Range;
-            string[] RangeSplit = Range.Split('-');
-            if (int.Parse(RangeSplit[0]) > int.Parse(RangeSplit[1]) || int.Parse(RangeSplit[1])-int.Parse(RangeSplit[0])+1 > 50)
+            if (Range != null)
             {
-                return BadRequest();
+                string[] RangeSplit = Range.Split('-');
+                if (int.Parse(RangeSplit[0]) > int.Parse(RangeSplit[1]) || int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1 > 50)
+                {
+                    return BadRequest();
+                }
             }
             var ResultPagi = resultOrd.Pagination(param, URL ,QueryString, Response);
             return await ResultPagi.ToListAsync();
