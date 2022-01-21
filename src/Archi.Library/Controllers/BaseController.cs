@@ -28,12 +28,25 @@ namespace Archi.library.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TModel>>> GetAll([FromQuery] Params param)
         {
+            var URL = this.Request.Scheme + "://" + this.Request.Host.Value + this.Request.Path.Value;
+            var QueryString = this.Request.QueryString.Value;
             var result2 = _context.Set<TModel>().Where(x => x.Active == true);
 
             var resultOrd = result2.Sort(param);
-
-            return await resultOrd.ToListAsync();
+            string Range = param.Range;
+            string[] RangeSplit = Range.Split('-');
+            if (int.Parse(RangeSplit[0]) > int.Parse(RangeSplit[1]) || int.Parse(RangeSplit[1])-int.Parse(RangeSplit[0])+1 > 50)
+            {
+                return BadRequest();
+            }
+            var ResultPagi = resultOrd.Pagination(param, URL ,QueryString, Response);
+            return await ResultPagi.ToListAsync();
         }
+
+
+
+
+
 
         // GET:/[controller]/id
         [HttpGet("{id}")]
