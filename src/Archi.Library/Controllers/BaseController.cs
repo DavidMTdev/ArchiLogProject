@@ -31,7 +31,18 @@ namespace Archi.library.Controllers
             var result2 = _context.Set<TModel>().Where(x => x.Active == true);
             // var indexAsc = this.Request.QueryString.Value.IndexOf("Asc", 0);
             // var indexDesc = this.Request.QueryString.Value.IndexOf("Desc", 0);
-            var order = (this.Request.QueryString.Value.ToLower().IndexOf("asc", 0) < this.Request.QueryString.Value.ToLower().IndexOf("desc", 0)) ? true : false;
+            var order = "none";
+            if (this.Request.QueryString.Value.ToLower().Contains("asc") && this.Request.QueryString.Value.ToLower().Contains("desc"))
+            {
+                order = (this.Request.QueryString.Value.ToLower().IndexOf("asc", 0) < this.Request.QueryString.Value.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
+            } else if (this.Request.QueryString.Value.ToLower().Contains("asc"))
+            {
+                order = "asc";
+            } else
+            {
+                order = "desc";
+            }
+            
             var resultOrd = result2.Sort(param, order);
 
             return await resultOrd.ToListAsync();
