@@ -56,7 +56,7 @@ namespace Archi.Library.Extensions
             return (IOrderedQueryable<TModel>)query;
         }
 
-        public static IOrderedQueryable<dynamic> SelectFields<TModel>(this IOrderedQueryable<TModel> query, Params param)
+        public static IQueryable<dynamic> SelectFields<TModel>(this IOrderedQueryable<TModel> query, Params param)
         {
             if (param.HasFields())
             {
@@ -92,7 +92,7 @@ namespace Archi.Library.Extensions
                 return query.Select(selector);
             }
 
-            return (IOrderedQueryable<dynamic>)query;
+            return (IQueryable<dynamic>)query;
         }
 
         public static Expression<Func<TModel, object>> SortExpression<TModel>(string champ)
