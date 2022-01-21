@@ -11,14 +11,15 @@ namespace Archi.Library.Extensions
 {
     public static class QueryExtensions
     {
-        public static IOrderedQueryable<TModel> Sort<TModel>(this IQueryable<TModel> query, Params param, bool order)
+        public static IOrderedQueryable<TModel> Sort<TModel>(this IQueryable<TModel> query, Params param, string order)
         {
             if (param.HasOrder())
             {
-                string[] champsAsc = param.Asc.Split(",");
-                string[] champsDesc = param.Desc.Split(",");
-                if (order == true)
+                if (order == "ascToDesc" || order == "asc")
                 {
+                    string[] champsAsc = param.Asc.Split(","); // param.Asc.Split(",");
+                    string[] champsDesc = order == "ascToDesc" ? param.Desc.Split(",") : new string[] { }; // new string[] { };
+
                     var finalQuery = query.OrderBy(SortExpression<TModel>(champsAsc[0]));
 
                     foreach (string champ in champsAsc)
@@ -34,8 +35,11 @@ namespace Archi.Library.Extensions
                         finalQuery = finalQuery.ThenByDescending(SortExpression<TModel>(champ));
                     }
                     return finalQuery;
-                } else
+                } else if (order == "descToAsc" || order == "desc")
                 {
+                    string[] champsAsc = order == "descToAsc" ? param.Asc.Split(",") : new string[] { }; // param.Asc.Split(",");
+                    string[] champsDesc = param.Desc.Split(","); // new string[] { };
+
                     var finalQuery = query.OrderByDescending(SortExpression<TModel>(champsDesc[0]));
 
                     foreach (string champ in champsDesc)
@@ -51,6 +55,9 @@ namespace Archi.Library.Extensions
                         }
                     }
                     return finalQuery;
+                } else
+                {
+
                 }
             }
             return (IOrderedQueryable<TModel>)query;
