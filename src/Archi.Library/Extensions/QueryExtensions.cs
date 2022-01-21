@@ -15,10 +15,12 @@ namespace Archi.Library.Extensions
         {
             if (param.HasOrder())
             {
+                string[] champsDesc = order == "ascToDesc" || order == "descToAsc" || order == "asc" ? param.Desc.Split(",") : new string[] { }; // new string[] { };
+                string[] champsAsc = order == "descToAsc" || order == "ascToDesc" || order == "desc" ? param.Asc.Split(",") : new string[] { }; // param.Asc.Split(",");
+
                 if (order == "ascToDesc" || order == "asc")
                 {
-                    string[] champsAsc = param.Asc.Split(","); // param.Asc.Split(",");
-                    string[] champsDesc = order == "ascToDesc" ? param.Desc.Split(",") : new string[] { }; // new string[] { };
+                    //string[] champsAsc = param.Asc.Split(","); // param.Asc.Split(",");
 
                     var finalQuery = query.OrderBy(SortExpression<TModel>(champsAsc[0]));
 
@@ -37,8 +39,7 @@ namespace Archi.Library.Extensions
                     return finalQuery;
                 } else if (order == "descToAsc" || order == "desc")
                 {
-                    string[] champsAsc = order == "descToAsc" ? param.Asc.Split(",") : new string[] { }; // param.Asc.Split(",");
-                    string[] champsDesc = param.Desc.Split(","); // new string[] { };
+                    //string[] champsDesc = param.Desc.Split(","); // new string[] { };
 
                     var finalQuery = query.OrderByDescending(SortExpression<TModel>(champsDesc[0]));
 
@@ -55,10 +56,7 @@ namespace Archi.Library.Extensions
                         }
                     }
                     return finalQuery;
-                } else
-                {
-
-                }
+                } 
             }
             return (IOrderedQueryable<TModel>)query;
         }
@@ -73,17 +71,12 @@ namespace Archi.Library.Extensions
 
                 /*var parameter = Expression.Parameter(typeof(TModel), "x");
                 //var bindings2 = fields.Select(name => Expression.Property(parameter, name));
-
                 var bindings = fields
                     .Select(name => Expression.Property(parameter, name))
                     .Select(member => Expression.Bind(member.Member, member));
                 //var body = Expression.MemberInit(Expression.New(typeof(TModel)), bindings);
-
                 dynamic aa = new ExpandoObject();
-
-
                 var body = Expression.MemberInit(Expression.New(typeof(TModel)), bindings);
-
                 var selector = Expression.Lambda<Func<TModel, dynamic>>(body, parameter);*/
 
                 var parameter = Expression.Parameter(typeof(TModel), "x");
