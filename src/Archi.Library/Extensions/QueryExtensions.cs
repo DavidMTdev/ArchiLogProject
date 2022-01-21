@@ -13,44 +13,39 @@ namespace Archi.Library.Extensions
         {
             if (param.HasOrder())
             {
+                string[] champsAsc = param.Asc.Split(",");
+                string[] champsDesc = param.Desc.Split(",");
                 if (order == true)
                 {
-                    string[] champsAsc = param.Asc.Split(",");
-                    string[] champsDesc = param.Desc.Split(",");
-
-
-                    var finalQuery = query.OrderBy(LambdaExpression<TModel>(champsAsc[0]));
+                    var finalQuery = query.OrderBy(SortExpression<TModel>(champsAsc[0]));
 
                     foreach (string champ in champsAsc)
                     {
                         var index = Array.FindIndex(champsAsc, w => w == champ);
                         if (index != 0)
                         {
-                            finalQuery = finalQuery.ThenBy(LambdaExpression<TModel>(champ));
+                            finalQuery = finalQuery.ThenBy(SortExpression<TModel>(champ));
                         }
                     }
                     foreach (string champ in champsDesc)
                     {
-                        finalQuery = finalQuery.ThenByDescending(LambdaExpression<TModel>(champ));
+                        finalQuery = finalQuery.ThenByDescending(SortExpression<TModel>(champ));
                     }
                     return finalQuery;
                 } else
                 {
-                    string[] champsDesc = param.Desc.Split(",");
-                    string[] champsAsc = param.Asc.Split(",");
-
-                    var finalQuery = query.OrderByDescending(LambdaExpression<TModel>(champsDesc[0]));
+                    var finalQuery = query.OrderByDescending(SortExpression<TModel>(champsDesc[0]));
 
                     foreach (string champ in champsDesc)
                     {
                         var index = Array.FindIndex(champsDesc, w => w == champ);
                         if (index != 0)
-                            finalQuery = finalQuery.ThenByDescending(LambdaExpression<TModel>(champ));
+                            finalQuery = finalQuery.ThenByDescending(SortExpression<TModel>(champ));
                     }
                     foreach (string champ in champsAsc)
                     {
                         {
-                            finalQuery = finalQuery.ThenBy(LambdaExpression<TModel>(champ));
+                            finalQuery = finalQuery.ThenBy(SortExpression<TModel>(champ));
                         }
                     }
                     return finalQuery;
@@ -59,7 +54,7 @@ namespace Archi.Library.Extensions
             return (IOrderedQueryable<TModel>)query;
         }
 
-        public static Expression<Func<TModel, object>> LambdaExpression<TModel>(string champ)
+        public static Expression<Func<TModel, object>> SortExpression<TModel>(string champ)
         {
             // création lambda (And/Or apres expressions pour condition)
             var parameter = Expression.Parameter(typeof(TModel), "x");
