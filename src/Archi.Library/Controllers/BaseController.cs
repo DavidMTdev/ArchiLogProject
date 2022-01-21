@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Archi.Library.Models;
+using Archi.Library.Extensions;
 
 namespace Archi.library.Controllers
 {
@@ -25,9 +26,35 @@ namespace Archi.library.Controllers
 
         // GET:/[controller]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TModel>>> GetAll()
+        public async Task<ActionResult<IEnumerable<dynamic>>> GetAll([FromQuery] Params param)
         {
-            return await _context.Set<TModel>().Where(x => x.Active == true).ToListAsync();
+            var result2 = _context.Set<TModel>().Where(x => x.Active == true);
+            //var r = result2.Select(x => new { x.ID });
+
+            
+
+            // var indexAsc = this.Request.QueryString.Value.IndexOf("Asc", 0);
+            // var indexDesc = this.Request.QueryString.Value.IndexOf("Desc", 0);
+            var order = "none";
+            if (this.Request.QueryString.Value.ToLower().Contains("asc") && this.Request.QueryString.Value.ToLower().Contains("desc"))
+            {
+                order = (this.Request.QueryString.Value.ToLower().IndexOf("asc", 0) < this.Request.QueryString.Value.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
+            } else if (this.Request.QueryString.Value.ToLower().Contains("asc"))
+            {
+                order = "asc";
+            } else
+            {
+                order = "desc";
+            }
+            
+            var resultOrd = result2.Sort(param, order);
+
+            //var resultOrd = result2.Sort(param);
+            //var rr = await r.ToListAsync();
+
+            var result = resultOrd.SelectFields(param);
+
+            return await result.ToListAsync();
         }
 
         // GET:/[controller]/id
