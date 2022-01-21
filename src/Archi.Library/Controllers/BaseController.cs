@@ -28,16 +28,20 @@ namespace Archi.library.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<dynamic>>> GetAll([FromQuery] Params param)
         {
-            var result2 = _context.Set<TModel>().Where(x => x.Active == true);
-
-            
+            var result2 = _context.Set<TModel>().Where(x => x.Active == true);       
             //var r = result2.Select(x => new { x.ID });
-            result2.SelectFields(param);
+            
+
+            // var indexAsc = this.Request.QueryString.Value.IndexOf("Asc", 0);
+            // var indexDesc = this.Request.QueryString.Value.IndexOf("Desc", 0);
+            var order = (this.Request.QueryString.Value.ToLower().IndexOf("asc", 0) < this.Request.QueryString.Value.ToLower().IndexOf("desc", 0)) ? true : false;
+            var resultOrd = result2.Sort(param, order);
 
             //var resultOrd = result2.Sort(param);
             //var rr = await r.ToListAsync();
+            resultOrd.SelectFields(param);
 
-            return await result2.ToListAsync();
+            return await resultOrd.ToListAsync();
         }
 
         // GET:/[controller]/id

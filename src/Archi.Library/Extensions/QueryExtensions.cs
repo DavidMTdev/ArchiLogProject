@@ -1,4 +1,4 @@
-﻿using Archi.Library.Models;
+using Archi.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,28 +11,52 @@ namespace Archi.Library.Extensions
 {
     public static class QueryExtensions
     {
-        public static IOrderedQueryable<TModel> Sort<TModel>(this IQueryable<TModel> query, Params param)
+        public static IOrderedQueryable<TModel> Sort<TModel>(this IQueryable<TModel> query, Params param, bool order)
         {
             if (param.HasOrder())
             {
-                string champ = param.Asc;
-                // var property = typeof(TModel).GetProperty(champ, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                // return query.OrderBy(x => x.GetType().GetProperty(champ, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance));
+                string[] champsAsc = param.Asc.Split(",");
+                string[] champsDesc = param.Desc.Split(",");
+                if (order == true)
+                {
+                    var finalQuery = query.OrderBy(SortExpression<TModel>(champsAsc[0]));
 
-                // création lambda (And/Or apres expressions pour condition)
-                var parameter = Expression.Parameter(typeof(TModel), "x");
-                var property = Expression.Property(parameter, champ);
-                var convert = Expression.Convert(property, typeof(object));
-                var lambda = Expression.Lambda<Func<TModel, object>>(convert, parameter);
+                    foreach (string champ in champsAsc)
+                    {
+                        var index = Array.FindIndex(champsAsc, w => w == champ);
+                        if (index != 0)
+                        {
+                            finalQuery = finalQuery.ThenBy(SortExpression<TModel>(champ));
+                        }
+                    }
+                    foreach (string champ in champsDesc)
+                    {
+                        finalQuery = finalQuery.ThenByDescending(SortExpression<TModel>(champ));
+                    }
+                    return finalQuery;
+                } else
+                {
+                    var finalQuery = query.OrderByDescending(SortExpression<TModel>(champsDesc[0]));
 
-                // utilisation
-                return query.OrderBy(lambda);
-
+                    foreach (string champ in champsDesc)
+                    {
+                        var index = Array.FindIndex(champsDesc, w => w == champ);
+                        if (index != 0)
+                            finalQuery = finalQuery.ThenByDescending(SortExpression<TModel>(champ));
+                    }
+                    foreach (string champ in champsAsc)
+                    {
+                        {
+                            finalQuery = finalQuery.ThenBy(SortExpression<TModel>(champ));
+                        }
+                    }
+                    return finalQuery;
+                }
             }
             return (IOrderedQueryable<TModel>)query;
         }
 
-        public static IQueryable<dynamic> SelectFields<TModel>(this IQueryable<TModel> query, Params param)
+        public static IOrderedQueryable<dynamic> SelectFields<TModel>(this IOrderedQueryable<TModel> query, Params param)
         {
             if (param.HasFields())
             {
@@ -68,7 +92,19 @@ namespace Archi.Library.Extensions
                 return query.Select(selector);
             }
 
-            return (IQueryable<dynamic>)query;
+            return (IOrderedQueryable<dynamic>)query;
+        }
+
+        public static Expression<Func<TModel, object>> SortExpression<TModel>(string champ)
+        {
+            // création lambda (And/Or apres expressions pour condition)
+            var parameter = Expression.Parameter(typeof(TModel), "x");
+            var property = Expression.Property(parameter, champ);
+            var convert = Expression.Convert(property, typeof(object));
+            var lambda = Expression.Lambda<Func<TModel, object>>(convert, parameter);
+
+            return lambda;
+
         }
     }
 }
