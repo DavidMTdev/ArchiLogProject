@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 
@@ -62,24 +64,13 @@ namespace Archi.Library.Extensions
             }
             return (IOrderedQueryable<TModel>)query;
         }
-
+      
         public static IQueryable<dynamic> SelectFields<TModel>(this IQueryable<TModel> query, Params param)
         {
             if (param.HasFields())
             {
                 string champ = param.Fields;
                 string[] fields = champ.Split(",");
-
-
-                /*var parameter = Expression.Parameter(typeof(TModel), "x");
-                //var bindings2 = fields.Select(name => Expression.Property(parameter, name));
-                var bindings = fields
-                    .Select(name => Expression.Property(parameter, name))
-                    .Select(member => Expression.Bind(member.Member, member));
-                //var body = Expression.MemberInit(Expression.New(typeof(TModel)), bindings);
-                dynamic aa = new ExpandoObject();
-                var body = Expression.MemberInit(Expression.New(typeof(TModel)), bindings);
-                var selector = Expression.Lambda<Func<TModel, dynamic>>(body, parameter);*/
 
                 var parameter = Expression.Parameter(typeof(TModel), "x");
                 var properties = fields
@@ -97,6 +88,37 @@ namespace Archi.Library.Extensions
             return (IQueryable<dynamic>)query;
         }
 
+        public static IQueryable<TModel> Pagination<TModel>(this IQueryable<TModel> query, Params param, String URL,String QueryString, Microsoft.AspNetCore.Http.HttpResponse response)
+        {
+            if (param.HasRange())
+            {
+                string Range = param.Range;
+                string[] RangeSplit = Range.Split('-');
+                int RangeValue = int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) +1;
+                int SkipValue = int.Parse(RangeSplit[0]);
+                int MaxRange = query.Count();
+
+                // Rel
+                string first = (SkipValue != 0) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue-1).ToString(), "first") + ", ": "";
+                string next = (int.Parse(RangeSplit[1]) != MaxRange) ? URL + getRel(QueryString,RangeSplit[0],RangeSplit[1],(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) ? MaxRange.ToString() : (int.Parse(RangeSplit[1]) + RangeValue).ToString(),"next") + ", ": "";
+                string last = (int.Parse(RangeSplit[1]) != MaxRange) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") : "" ;
+                string prev = (SkipValue != 0) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 ? (SkipValue - RangeValue - 1).ToString() : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "") : "";
+                response.Headers.Add("Content-Range", $"{Range}/{MaxRange}");
+                response.Headers.Add("Accept-Range", $"Product 50");
+                response.Headers.Add("Link", $"{first}{prev}{next}{last}");
+                return query.Skip(SkipValue).Take(RangeValue);
+            }
+            return (IQueryable<TModel>)query;
+        }
+
+        public static string getRel(string QueryString, string initStart, string initEnd, string ReplaceStart, string ReplaceEnd, string rel)
+        {
+            string page = QueryString.Replace(initStart + "-", ReplaceStart + "-");
+            page = page.Replace("-" + initEnd, "-" + ReplaceEnd);
+            page += $"; rel=\"{rel}\"";
+            return page;
+        }
+
         public static Expression<Func<TModel, object>> SortExpression<TModel>(string champ)
         {
             // création lambda (And/Or apres expressions pour condition)
@@ -106,7 +128,6 @@ namespace Archi.Library.Extensions
             var lambda = Expression.Lambda<Func<TModel, object>>(convert, parameter);
 
             return lambda;
-
         }
 
 
