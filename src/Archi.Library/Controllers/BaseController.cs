@@ -71,9 +71,9 @@ namespace Archi.library.Controllers
 
             var resultOrd = result2.Sort(param, order);
 
-            var resultSearch = resultOrd.QuerySearch(param, order, this.Request.Query);
+            var resultSearch = resultOrd.QuerySearch(param, this.Request.Query);
 
-            var result = resultOrd.SelectFields(param);
+            var result = resultSearch.SelectFields(param);
 
             return await result.ToListAsync();
         }
