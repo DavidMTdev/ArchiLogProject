@@ -1,4 +1,5 @@
 using Archi.Library.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,6 +106,12 @@ namespace Archi.Library.Extensions
 
             return lambda;
 
+        }
+
+
+        public static IOrderedQueryable<TModel> QuerySearch<TModel>(this IOrderedQueryable<TModel> query, Params param, string order, IQueryCollection searchFields)
+        {
+            return (IOrderedQueryable<TModel>)query;
         }
     }
 }
