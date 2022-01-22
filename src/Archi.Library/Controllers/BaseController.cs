@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Archi.library.Data;
 using System;
 using System.Collections.Generic;
@@ -29,12 +29,10 @@ namespace Archi.library.Controllers
         public async Task<ActionResult<IEnumerable<dynamic>>> GetAll([FromQuery] Params param)
         {
             var result2 = _context.Set<TModel>().Where(x => x.Active == true);
-            //var r = result2.Select(x => new { x.ID });
 
+            var URL = this.Request.Scheme + "://" + this.Request.Host.Value + this.Request.Path.Value;
+            var QueryString = this.Request.QueryString.Value;
             
-
-            // var indexAsc = this.Request.QueryString.Value.IndexOf("Asc", 0);
-            // var indexDesc = this.Request.QueryString.Value.IndexOf("Desc", 0);
             var order = "none";
             if (this.Request.QueryString.Value.ToLower().Contains("asc") && this.Request.QueryString.Value.ToLower().Contains("desc"))
             {
@@ -48,13 +46,22 @@ namespace Archi.library.Controllers
             }
             
             var resultOrd = result2.Sort(param, order);
-
-            //var resultOrd = result2.Sort(param);
-            //var rr = await r.ToListAsync();
-
-            var result = resultOrd.SelectFields(param);
+            
+            string Range = param.Range;
+            if (Range != null)
+            {
+                string[] RangeSplit = Range.Split('-');
+                if (int.Parse(RangeSplit[0]) > int.Parse(RangeSplit[1]) || int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1 > 50)
+                {
+                    return BadRequest();
+                }
+            }
+            
+            var ResultPagi = resultOrd.Pagination(param, URL ,QueryString, Response);
+            var result = ResultPagi.SelectFields(param);
 
             return await result.ToListAsync();
+
         }
 
         // GET:/[controller]/id
