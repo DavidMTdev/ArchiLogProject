@@ -63,23 +63,12 @@ namespace Archi.Library.Extensions
             return (IOrderedQueryable<TModel>)query;
         }
       
-        public static IQueryable<dynamic> SelectFields<TModel>(this IOrderedQueryable<TModel> query, Params param)
+        public static IQueryable<dynamic> SelectFields<TModel>(this IQueryable<TModel> query, Params param)
         {
             if (param.HasFields())
             {
                 string champ = param.Fields;
                 string[] fields = champ.Split(",");
-
-
-                /*var parameter = Expression.Parameter(typeof(TModel), "x");
-                //var bindings2 = fields.Select(name => Expression.Property(parameter, name));
-                var bindings = fields
-                    .Select(name => Expression.Property(parameter, name))
-                    .Select(member => Expression.Bind(member.Member, member));
-                //var body = Expression.MemberInit(Expression.New(typeof(TModel)), bindings);
-                dynamic aa = new ExpandoObject();
-                var body = Expression.MemberInit(Expression.New(typeof(TModel)), bindings);
-                var selector = Expression.Lambda<Func<TModel, dynamic>>(body, parameter);*/
 
                 var parameter = Expression.Parameter(typeof(TModel), "x");
                 var properties = fields
@@ -119,13 +108,14 @@ namespace Archi.Library.Extensions
             }
             return (IQueryable<TModel>)query;
         }
-        
-        public static string getRel(string QueryString,string initStart, string initEnd, string ReplaceStart, string ReplaceEnd, string rel)
+
+        public static string getRel(string QueryString, string initStart, string initEnd, string ReplaceStart, string ReplaceEnd, string rel)
         {
-            string page = QueryString.Replace( initStart + "-", ReplaceStart+"-");
+            string page = QueryString.Replace(initStart + "-", ReplaceStart + "-");
             page = page.Replace("-" + initEnd, "-" + ReplaceEnd);
             page += $"; rel=\"{rel}\"";
             return page;
+        }
 
         public static Expression<Func<TModel, object>> SortExpression<TModel>(string champ)
         {

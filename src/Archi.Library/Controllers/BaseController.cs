@@ -28,9 +28,10 @@ namespace Archi.library.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<dynamic>>> GetAll([FromQuery] Params param)
         {
+            var result2 = _context.Set<TModel>().Where(x => x.Active == true);
+
             var URL = this.Request.Scheme + "://" + this.Request.Host.Value + this.Request.Path.Value;
             var QueryString = this.Request.QueryString.Value;
-            var result2 = _context.Set<TModel>().Where(x => x.Active == true);
             
             var order = "none";
             if (this.Request.QueryString.Value.ToLower().Contains("asc") && this.Request.QueryString.Value.ToLower().Contains("desc"))
