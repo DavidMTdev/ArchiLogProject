@@ -1,4 +1,6 @@
 using Archi.Library.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -126,6 +128,71 @@ namespace Archi.Library.Extensions
             var lambda = Expression.Lambda<Func<TModel, object>>(convert, parameter);
 
             return lambda;
+        }
+
+
+        public static IQueryable<TModel> QuerySearch<TModel>(this IQueryable<TModel> query, Params param, IQueryCollection searchFields)
+        {
+            /*IEnumerable<KeyValuePair<string, StringValues>>[] array = new IEnumerable<KeyValuePair<string, StringValues>>[] { };
+
+            foreach(KeyValuePair<string, StringValues> search in searchFields)
+            {
+                try
+                {
+                   var test2 = typeof(Params).GetProperty(search.Key);
+                }
+                catch
+                {
+                    array.;
+                }
+            }*/
+                
+            var result = query;
+
+            var test = searchFields.Select(f => LikeExpression<TModel>(f.Key, f.Value));
+
+            foreach(Expression<Func<TModel, bool>> exp in test)
+            {
+                result = result.Where(exp);
+            }
+
+            return result;
+            
+        }
+
+        public static Expression<Func<TModel, bool>> LikeExpression<TModel>(string property, string value)
+        {
+            var param = Expression.Parameter(typeof(TModel), "x");
+            var propertyInfo = typeof(TModel).GetProperty(property, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            var member = Expression.Property(param, propertyInfo.Name);
+
+            var startWith = value.StartsWith("*");
+            var endsWith = value.EndsWith("*");
+
+            var searchValue = "";
+            searchValue = value.Replace("*", "");
+
+            var constant = Expression.Constant(searchValue);
+            Expression exp;
+
+            if (endsWith && startWith)
+            {
+                exp = Expression.Call(member, "Contains", null, constant);
+            }
+            else if (startWith)
+            {
+                exp = Expression.Call(member, "EndsWith", null, constant);
+            }
+            else if (endsWith)
+            {
+                exp = Expression.Call(member, "StartsWith", null, constant);
+            }
+            else
+            {
+                exp = Expression.Equal(member, constant);
+            }
+
+            return Expression.Lambda<Func<TModel, bool>>(exp, param);
         }
     }
 }

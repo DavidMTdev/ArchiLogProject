@@ -64,6 +64,35 @@ namespace Archi.library.Controllers
 
         }
 
+        // GET:/[controller]/search
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<dynamic>>> GetBySearch([FromQuery] Params param)
+        {
+            var result2 = _context.Set<TModel>().Where(x => x.Active == true);
+
+            var order = "none";
+            if (this.Request.QueryString.Value.ToLower().Contains("asc") && this.Request.QueryString.Value.ToLower().Contains("desc"))
+            {
+                order = (this.Request.QueryString.Value.ToLower().IndexOf("asc", 0) < this.Request.QueryString.Value.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
+            }
+            else if (this.Request.QueryString.Value.ToLower().Contains("asc"))
+            {
+                order = "asc";
+            }
+            else
+            {
+                order = "desc";
+            }
+
+            var resultOrd = result2.Sort(param, order);
+
+            var resultSearch = resultOrd.QuerySearch(param, this.Request.Query);
+
+            var result = resultSearch.SelectFields(param);
+
+            return await result.ToListAsync();
+        }
+
         // GET:/[controller]/id
         [HttpGet("{id}")]
         public async Task<ActionResult<TModel>> GetByID(int id)
