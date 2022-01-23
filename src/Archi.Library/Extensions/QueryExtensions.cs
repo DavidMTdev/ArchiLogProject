@@ -133,23 +133,19 @@ namespace Archi.Library.Extensions
 
         public static IQueryable<TModel> QuerySearch<TModel>(this IQueryable<TModel> query, Params param, IQueryCollection searchFields)
         {
-            /*IEnumerable<KeyValuePair<string, StringValues>>[] array = new IEnumerable<KeyValuePair<string, StringValues>>[] { };
+            var opts = new Dictionary<string, StringValues>();
 
-            foreach(KeyValuePair<string, StringValues> search in searchFields)
+            foreach (KeyValuePair<string, StringValues> search in searchFields)
             {
-                try
+                if (typeof(Params).GetProperty(search.Key, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance) == null)
                 {
-                   var test2 = typeof(Params).GetProperty(search.Key);
-                }
-                catch
-                {
-                    array.;
-                }
-            }*/
-                
+                    opts.Add(search.Key, search.Value);
+                } 
+            }
+
             var result = query;
 
-            var test = searchFields.Select(f => LikeExpression<TModel>(f.Key, f.Value));
+            var test = opts.Select(f => LikeExpression<TModel>(f.Key, f.Value));
 
             foreach(Expression<Func<TModel, bool>> exp in test)
             {
