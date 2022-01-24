@@ -56,9 +56,12 @@ namespace Archi.library.Controllers
                     return BadRequest();
                 }
             }
-            
-            var ResultPagi = resultOrd.Pagination(param, URL ,QueryString, Response);
-            var result = ResultPagi.SelectFields(param);
+
+            var resultFilter = resultOrd.Filter(param, this.Request.Query);
+
+            var resultPagi = resultFilter.Pagination(param, URL ,QueryString, Response);
+
+            var result = resultPagi.SelectFields(param);
 
             return await result.ToListAsync();
 

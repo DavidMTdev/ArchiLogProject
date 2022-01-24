@@ -130,6 +130,42 @@ namespace Archi.Library.Extensions
             return lambda;
         }
 
+        public static IQueryable<TModel> Filter<TModel>(this IQueryable<TModel> query, Params param, IQueryCollection requestQuery)
+        {
+            var result = query;
+            var opts = new Dictionary<string, StringValues>();
+            var parameter = Expression.Parameter(typeof(TModel), "x");
+
+            foreach (KeyValuePair<string, StringValues> search in requestQuery)
+            {
+                if (typeof(Params).GetProperty(search.Key, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance) == null)
+                {
+                    opts.Add(search.Key, search.Value.ToString().Split(','));
+                }
+            }
+
+            var likeExpressions = opts.Select(d => d.Value.Select(f => LikeExpression<TModel>(parameter, d.Key, f)));
+            Expression expOr;
+
+            foreach (var likeExpression in likeExpressions)
+            {
+                var exp = likeExpression.ToArray();
+                if (exp.Length > 1)
+                {
+                    expOr = Expression.Or(exp[0], exp[1]);
+                    expOr = exp.Skip(2).Aggregate(expOr, (current, expression) => Expression.Or(current, expression));
+                }
+                else
+                {
+                    expOr = exp[0];
+                }
+
+                var lambda = Expression.Lambda<Func<TModel, bool>>(expOr, parameter);
+                result = result.Where(lambda);
+            }
+
+            return result;
+        }
 
         public static IQueryable<TModel> QuerySearch<TModel>(this IQueryable<TModel> query, Params param, IQueryCollection searchFields)
         {
@@ -144,21 +180,22 @@ namespace Archi.Library.Extensions
             }
 
             var result = query;
+            var parameter = Expression.Parameter(typeof(TModel), "x");
+            var test = opts.Select(f => LikeExpression<TModel>(parameter, f.Key, f.Value));
 
-            var test = opts.Select(f => LikeExpression<TModel>(f.Key, f.Value));
-
-            foreach(Expression<Func<TModel, bool>> exp in test)
+            foreach (var exp in test)
             {
-                result = result.Where(exp);
+                var lambda = Expression.Lambda<Func<TModel, bool>>(exp, parameter);
+                result = result.Where(lambda);
             }
 
             return result;
             
         }
 
-        public static Expression<Func<TModel, bool>> LikeExpression<TModel>(string property, string value)
+        public static Expression LikeExpression<TModel>(ParameterExpression param, string property, string value)
         {
-            var param = Expression.Parameter(typeof(TModel), "x");
+            //var param = Expression.Parameter(typeof(TModel), "x");
             var propertyInfo = typeof(TModel).GetProperty(property, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
             var member = Expression.Property(param, propertyInfo.Name);
 
@@ -188,7 +225,8 @@ namespace Archi.Library.Extensions
                 exp = Expression.Equal(member, constant);
             }
 
-            return Expression.Lambda<Func<TModel, bool>>(exp, param);
+            //return Expression.Lambda<Func<TModel, bool>>(exp, param);
+            return exp;
         }
     }
 }
