@@ -197,32 +197,63 @@ namespace Archi.Library.Extensions
         {
             //var param = Expression.Parameter(typeof(TModel), "x");
             var propertyInfo = typeof(TModel).GetProperty(property, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            var member = Expression.Property(param, propertyInfo.Name);
+            var member = Expression.Property(param, propertyInfo);
+            
+            //var convert = Expression.Convert(member, propertyInfo.PropertyType);
+
+            var tt = propertyInfo.PropertyType;
+            var tttt = propertyInfo.PropertyType.Name;
+
 
             var startWith = value.StartsWith("*");
             var endsWith = value.EndsWith("*");
+            var searchValue = value.Replace("*", "");
 
-            var searchValue = "";
-            searchValue = value.Replace("*", "");
+            Expression constant;
+            Expression convert;
 
-            var constant = Expression.Constant(searchValue);
+            if (propertyInfo.PropertyType == typeof(int))
+            {
+                int num = int.Parse(searchValue);
+                constant = Expression.Constant(num);
+                convert = Expression.Convert(member, typeof(int));
+            }
+            else if (propertyInfo.PropertyType == typeof(DateTime?))
+            {
+                DateTime datetime = DateTime.Parse(searchValue);
+                constant = Expression.Constant(datetime);
+                convert = Expression.Convert(member, typeof(DateTime));
+            }
+            else
+            {
+                constant = Expression.Constant(searchValue);
+                convert = Expression.Convert(member, typeof(string));
+            }
+
+            //var constant = Expression.Constant(searchValue);
+
             Expression exp;
 
             if (endsWith && startWith)
             {
-                exp = Expression.Call(member, "Contains", null, constant);
+                exp = Expression.Call(convert, "Contains", null, constant);
             }
             else if (startWith)
             {
-                exp = Expression.Call(member, "EndsWith", null, constant);
+                exp = Expression.Call(convert, "EndsWith", null, constant);
             }
             else if (endsWith)
             {
-                exp = Expression.Call(member, "StartsWith", null, constant);
+                exp = Expression.Call(convert, "StartsWith", null, constant);
+
+            }
+            else if (propertyInfo.PropertyType == typeof(DateTime?))
+            {
+                exp = Expression.Call(convert, "CompareTo", null, constant);
             }
             else
             {
-                exp = Expression.Equal(member, constant);
+                exp = Expression.Equal(convert, constant);
             }
 
             //return Expression.Lambda<Func<TModel, bool>>(exp, param);
