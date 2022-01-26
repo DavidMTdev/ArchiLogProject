@@ -26,18 +26,19 @@ namespace Archi.library.Controllers
 
         // GET:/[controller]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<dynamic>>> GetAll([FromQuery] Params param)
+        public async Task<ActionResult<IEnumerable<dynamic>>> GetAll([FromQuery] Params param, string urlDefault = "")
         {
             var result2 = _context.Set<TModel>().Where(x => x.Active == true);
 
-            var URL = this.Request.Scheme + "://" + this.Request.Host.Value + this.Request.Path.Value;
-            var QueryString = this.Request.QueryString.Value;
+            var URL = urlDefault != "" ? urlDefault : this.Request.Scheme + "://" + this.Request.Host.Value + this.Request.Path.Value;
+            var QueryString = urlDefault != "" ? urlDefault.Split("?")[1] : this.Request.QueryString.Value;
+            var test = this.Request.ToString();
             
             var order = "none";
-            if (this.Request.QueryString.Value.ToLower().Contains("asc") && this.Request.QueryString.Value.ToLower().Contains("desc"))
+            if (QueryString.ToLower().Contains("asc") && QueryString.ToLower().Contains("desc"))
             {
-                order = (this.Request.QueryString.Value.ToLower().IndexOf("asc", 0) < this.Request.QueryString.Value.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
-            } else if (this.Request.QueryString.Value.ToLower().Contains("asc"))
+                order = (QueryString.ToLower().IndexOf("asc", 0) < QueryString.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
+            } else if (QueryString.ToLower().Contains("asc"))
             {
                 order = "asc";
             } else

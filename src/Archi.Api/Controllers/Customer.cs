@@ -12,11 +12,8 @@ namespace Archi.Api.Controllers
 {
     public class CustomersController : BaseController<ArchiDBContext, Customer>
     {
-        readonly IDiagnosticContext _diagnosticContext;
-        public CustomersController(IDiagnosticContext diagnosticContext, ArchiDBContext context) : base(context)
+        public CustomersController( ArchiDBContext context) : base(context)
         {
-            _diagnosticContext = diagnosticContext ??
-                throw new ArgumentNullException(nameof(diagnosticContext));
         }
     }
 }

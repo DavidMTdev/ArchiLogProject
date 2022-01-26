@@ -99,10 +99,22 @@ namespace Archi.Library.Extensions
                 int MaxRange = query.Count();
 
                 // Rel
-                string first = (SkipValue != 0) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue-1).ToString(), "first") + ", ": "";
-                string next = (int.Parse(RangeSplit[1]) != MaxRange) ? URL + getRel(QueryString,RangeSplit[0],RangeSplit[1],(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) ? MaxRange.ToString() : (int.Parse(RangeSplit[1]) + RangeValue).ToString(),"next") + ", ": "";
-                string last = (int.Parse(RangeSplit[1]) != MaxRange) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") : "" ;
-                string prev = (SkipValue != 0) ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 ? (SkipValue - RangeValue - 1).ToString() : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "") : "";
+                string first = (SkipValue != 0) 
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue-1).ToString(), "first") + ", "
+                    : "";
+                string next = (int.Parse(RangeSplit[1]) != MaxRange) 
+                    ? URL + getRel(QueryString,RangeSplit[0],RangeSplit[1],(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) 
+                    ? MaxRange.ToString() 
+                    : (int.Parse(RangeSplit[1]) + RangeValue).ToString(),"next") + ", "
+                    : "";
+                string last = (int.Parse(RangeSplit[1]) != MaxRange) 
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") 
+                    : "" ;
+                string prev = (SkipValue != 0) 
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 
+                    ? (SkipValue - RangeValue - 1).ToString() 
+                    : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "") 
+                    : "";
                 response.Headers.Add("Content-Range", $"{Range}/{MaxRange}");
                 response.Headers.Add("Accept-Range", $"Product 50");
                 response.Headers.Add("Link", $"{first}{prev}{next}{last}");
@@ -221,8 +233,8 @@ namespace Archi.Library.Extensions
             else if (propertyInfo.PropertyType == typeof(DateTime?))
             {
                 DateTime datetime = DateTime.Parse(searchValue);
-                constant = Expression.Constant(datetime);
-                convert = Expression.Convert(member, typeof(DateTime));
+                constant = Expression.Constant(searchValue);
+                convert = Expression.Convert(member, typeof(string));
             }
             else
             {
@@ -247,10 +259,10 @@ namespace Archi.Library.Extensions
                 exp = Expression.Call(convert, "StartsWith", null, constant);
 
             }
-            else if (propertyInfo.PropertyType == typeof(DateTime?))
+            /*else if (propertyInfo.PropertyType == typeof(DateTime?))
             {
                 exp = Expression.Call(convert, "CompareTo", null, constant);
-            }
+            }*/
             else
             {
                 exp = Expression.Equal(convert, constant);
