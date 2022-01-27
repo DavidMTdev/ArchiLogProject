@@ -17,6 +17,8 @@ using System.Threading.Tasks;
 using Archi.Library;
 using Serilog;
 using Serilog.Events;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Archi.Api
 {
@@ -35,6 +37,18 @@ namespace Archi.Api
             services.AddSwaggerGen(x =>
             {
                 x.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            });
+
+            services.AddAuthentication().AddJwtBearer(cfg => 
+            {
+                cfg.RequireHttpsMetadata = false;
+                cfg.SaveToken = true;
+                cfg.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = Configuration["TokenOptions:Issuer"],
+                    ValidAudience = Configuration["TokenOptions:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenOptions:Key"])),
+                };
             });
         }
 
