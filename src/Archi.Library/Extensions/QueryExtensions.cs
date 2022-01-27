@@ -220,33 +220,34 @@ namespace Archi.Library.Extensions
             var lessValue = value[0].Replace("[", "");
             var greaterValue = value[1].Replace("]", "");
 
+            Expression expGreaterThanOrEqual = null;
+            Expression expLessThanOrEqual = null;
+            Expression convert = Expression.Convert(member, propertyInfo.PropertyType);
+
+            if (!string.IsNullOrWhiteSpace(lessValue))
+            {
+                Expression lessValueConstant = Expression.Constant(Convert.ChangeType(lessValue, propertyInfo.PropertyType));
+                expGreaterThanOrEqual = Expression.GreaterThanOrEqual(convert, lessValueConstant);
+            }
+
+            if (!string.IsNullOrWhiteSpace(greaterValue))
+            {
+                Expression greaterValueConstant = Expression.Constant(Convert.ChangeType(greaterValue, propertyInfo.PropertyType));
+                expLessThanOrEqual = Expression.LessThanOrEqual(convert, greaterValueConstant);
+            }
+
             Expression exp;
-            Expression constant;
-            Expression convert = Expression.Convert(member, typeof(int));
-
-            if (!string.IsNullOrWhiteSpace(lessValue) && !string.IsNullOrWhiteSpace(greaterValue))
+            if (expLessThanOrEqual == null && expGreaterThanOrEqual != null)
             {
-                constant = Expression.Constant(int.Parse(greaterValue));
-                Expression expLessThanOrEqual = Expression.LessThanOrEqual(convert, constant);
-
-                constant = Expression.Constant(int.Parse(lessValue));
-                Expression expGreaterThanOrEqual = Expression.GreaterThanOrEqual(convert, constant);
-
-                exp = Expression.And(expLessThanOrEqual, expGreaterThanOrEqual);
+                exp = expGreaterThanOrEqual;
             }
-            else if (string.IsNullOrWhiteSpace(lessValue) && !string.IsNullOrWhiteSpace(greaterValue))
+            else if (expLessThanOrEqual != null && expGreaterThanOrEqual == null)
             {
-                constant = Expression.Constant(int.Parse(greaterValue));
-                exp = Expression.LessThanOrEqual(convert, constant);
-            }
-            else if (!string.IsNullOrWhiteSpace(lessValue) && string.IsNullOrWhiteSpace(greaterValue))
-            {
-                constant = Expression.Constant(int.Parse(lessValue));
-                exp = Expression.GreaterThanOrEqual(convert, constant);
+                exp = expLessThanOrEqual;
             }
             else
             {
-                exp = Expression.Empty();
+                exp = Expression.And(expLessThanOrEqual, expGreaterThanOrEqual);
             }
 
             return exp;
@@ -262,27 +263,9 @@ namespace Archi.Library.Extensions
 
             var searchValue = value.Replace("*", "");
 
-            Expression constant;
-            Expression convert;
             Expression exp;
-
-            if (propertyInfo.PropertyType == typeof(int) || propertyInfo.PropertyType == typeof(int?))
-            {
-                int num = int.Parse(searchValue);
-                constant = Expression.Constant(num);
-                convert = Expression.Convert(member, typeof(int));
-            }
-            else if (propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))
-            {
-                DateTime datetime = DateTime.Parse(searchValue);
-                constant = Expression.Constant(datetime);
-                convert = Expression.Convert(member, typeof(DateTime));
-            }
-            else
-            {
-                constant = Expression.Constant(searchValue);
-                convert = Expression.Convert(member, typeof(string));
-            }
+            Expression convert = Expression.Convert(member, propertyInfo.PropertyType);
+            Expression constant = Expression.Constant(Convert.ChangeType(searchValue, propertyInfo.PropertyType));
 
             if (endsWith && startWith)
             {
@@ -295,7 +278,6 @@ namespace Archi.Library.Extensions
             else if (endsWith)
             {
                 exp = Expression.Call(convert, "StartsWith", null, constant);
-
             }
             else
             {
@@ -304,7 +286,6 @@ namespace Archi.Library.Extensions
 
             return exp;
         }
-
 
         public static dynamic DefineValues(string scheme, string hostValue, string pathValue, string value)
         {
