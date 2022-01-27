@@ -1,3 +1,4 @@
+using Archi.library.Controllers;
 using Archi.Library.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -153,20 +154,8 @@ namespace Archi.Library.Extensions
                 if (typeof(Params).GetProperty(search.Key, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance) == null)
                 {
                     opts.Add(search.Key, search.Value.ToString().Split(','));
-
-                    /*{
-                        "firstname": ["david", "seb"],
-                        "lastname": "texier",
-                        "id": ["[1", "10]"]
-                    }*/
                 }
             }
-
-            //var likeExpression = opts.Select(d => d.Value.Select(f => LikeExpression<TModel>(parameter, d.Key, f)));
-            //Expression likeExpressions;
-            //Expression rangeExpression;
-
-            
 
             foreach (var item in opts)
             {
@@ -179,7 +168,6 @@ namespace Archi.Library.Extensions
                 {
                     var likeExpressions = item.Value.Select(f => LikeExpression<TModel>(parameter, item.Key, f)).ToArray();
 
-                    //var exp = likeExpressions.ToArray();
                     if (likeExpressions.Length > 1)
                     {
                         exp = Expression.Or(likeExpressions[0], likeExpressions[1]);
@@ -194,25 +182,6 @@ namespace Archi.Library.Extensions
                 var lambda = Expression.Lambda<Func<TModel, bool>>(exp, parameter);
                 result = result.Where(lambda);
             }
-            //[ ["x.firstame == 'david'", "x.firstame == 'sebd'"] , ["x.lastname == 'texier'"] , ["x.id == '1'", "x.id == '10'"]]
-
-
-            /*foreach (var likeExpression in likeExpressions)
-            {
-                var exp = likeExpression.ToArray();
-                if (exp.Length > 1)
-                {
-                    expOr = Expression.Or(exp[0], exp[1]);
-                    expOr = exp.Skip(2).Aggregate(expOr, (current, expression) => Expression.Or(current, expression));
-                }
-                else
-                {
-                    expOr = exp[0];
-                }
-
-                var lambda = Expression.Lambda<Func<TModel, bool>>(expOr, parameter);
-                result = result.Where(lambda);
-            }*/
 
             return result;
         }
@@ -253,10 +222,6 @@ namespace Archi.Library.Extensions
 
             Expression exp;
             Expression constant;
-
-            //Expression lessValueConstant = Expression.Constant(int.Parse(lessValue));
-            //Expression greaterValueConstant = Expression.Constant(int.Parse(greaterValue));
-
             Expression convert = Expression.Convert(member, typeof(int));
 
             if (!string.IsNullOrWhiteSpace(lessValue) && !string.IsNullOrWhiteSpace(greaterValue))
@@ -338,6 +303,27 @@ namespace Archi.Library.Extensions
             }
 
             return exp;
+        }
+
+
+        public static dynamic DefineValues(string scheme, string hostValue, string pathValue, string value)
+        {
+            var Url = scheme + "://" + hostValue + pathValue;
+            var QueryString = value;
+
+            var Order = "none";
+            if (QueryString.ToLower().Contains("asc") && QueryString.ToLower().Contains("desc"))
+            {
+                Order = (QueryString.ToLower().IndexOf("asc", 0) < QueryString.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
+            } else if (QueryString.ToLower().Contains("asc"))
+            {
+                Order = "asc";
+            } else
+            {
+                Order = "desc";
+            }
+
+            return new { Url, QueryString, Order};
         }
     }
 }

@@ -26,41 +26,30 @@ namespace Archi.library.Controllers
 
         // GET:/[controller]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<dynamic>>> GetAll([FromQuery] Params param, string urlDefault = "")
+        public async Task<ActionResult<IEnumerable<dynamic>>> GetAll([FromQuery] Params param)
         {
             try
             {
                 var result2 = _context.Set<TModel>().Where(x => x.Active == true);
 
-                var URL = urlDefault != "" ? urlDefault : this.Request.Scheme + "://" + this.Request.Host.Value + this.Request.Path.Value;
-                var QueryString = urlDefault != "" ? urlDefault.Split("?")[1] : this.Request.QueryString.Value;
-                var test = this.Request.ToString();
+            dynamic defaultValues = QueryExtensions.DefineValues(this.Request.Scheme, this.Request.Host.Value, this.Request.Path.Value, this.Request.QueryString.Value);
 
-                var order = "none";
-                if (QueryString.ToLower().Contains("asc") && QueryString.ToLower().Contains("desc"))
+            string URL = defaultValues.Url;
+            string QueryString = defaultValues.QueryString;
+            
+            string order = defaultValues.Order;
+            
+            var resultOrd = result2.Sort(param, order);
+            
+            string Range = param.Range;
+            if (Range != null)
+            {
+                string[] RangeSplit = Range.Split('-');
+                if (int.Parse(RangeSplit[0]) > int.Parse(RangeSplit[1]) || int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1 > 50)
                 {
-                    order = (QueryString.ToLower().IndexOf("asc", 0) < QueryString.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
+                    return BadRequest();
                 }
-                else if (QueryString.ToLower().Contains("asc"))
-                {
-                    order = "asc";
-                }
-                else
-                {
-                    order = "desc";
-                }
-
-                var resultOrd = result2.Sort(param, order);
-
-                string Range = param.Range;
-                if (Range != null)
-                {
-                    string[] RangeSplit = Range.Split('-');
-                    if (int.Parse(RangeSplit[0]) > int.Parse(RangeSplit[1]) || int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1 > 50)
-                    {
-                        return BadRequest();
-                    }
-                }
+            }
 
                 var resultFilter = resultOrd.Filter(param, this.Request.Query);
 
@@ -82,19 +71,12 @@ namespace Archi.library.Controllers
         {
             var result2 = _context.Set<TModel>().Where(x => x.Active == true);
 
-            var order = "none";
-            if (this.Request.QueryString.Value.ToLower().Contains("asc") && this.Request.QueryString.Value.ToLower().Contains("desc"))
-            {
-                order = (this.Request.QueryString.Value.ToLower().IndexOf("asc", 0) < this.Request.QueryString.Value.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
-            }
-            else if (this.Request.QueryString.Value.ToLower().Contains("asc"))
-            {
-                order = "asc";
-            }
-            else
-            {
-                order = "desc";
-            }
+            dynamic defaultValues = QueryExtensions.DefineValues(this.Request.Scheme, this.Request.Host.Value, this.Request.Path.Value, this.Request.QueryString.Value);
+
+            string URL = defaultValues.Url;
+            string QueryString = defaultValues.QueryString;
+
+            string order = defaultValues.Order;
 
             var resultOrd = result2.Sort(param, order);
 

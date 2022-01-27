@@ -29,7 +29,8 @@ namespace Archi.Test
         [Test]
         public async Task TestGetAll()
         {
-            var actionResult = await _controller.GetAll(new Params(), "https://locaost:8080/api/v1/customers");
+            var actionResult = await _controller.GetAll(new Params());
+            // faire une httpRequest (axios) car pas de simulation de this
             //var result = actionResult.Result as ObjectResult;
             var values = actionResult.Value as IEnumerable<Customer>;
 
@@ -46,13 +47,14 @@ namespace Archi.Test
             Assert.AreEqual((int)HttpStatusCode.Created, result.StatusCode);
         }
 
-        /*[Test]
+        [Test]
         public async Task TestGetID()
         {
             var post = await _controller.GetByID(1);
             var result = post.Result as ObjectResult;
+            // Console.WriteLine(result;
             Assert.AreEqual((int)HttpStatusCode.OK, result.StatusCode);
-        }*/
+        }
 
         /*[Test]
         public async Task TestDelete()
