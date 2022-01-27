@@ -4,12 +4,16 @@ using Archi.Library.Models;
 using Archi.Test.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using Moq.Protected;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Archi.Test
@@ -27,16 +31,16 @@ namespace Archi.Test
         }
 
         [Test]
-        public async Task TestGetAll()
+        public Task TestGetAll()
         {
-            var actionResult = await _controller.GetAll(new Params());
-            // faire une httpRequest (axios) car pas de simulation de this
-            //var result = actionResult.Result as ObjectResult;
-            var values = actionResult.Value as IEnumerable<Customer>;
+            var mockHandler = new Mock<HttpMessageHandler>();
 
-            //Assert.AreEqual((int)HttpStatusCode.OK, result.StatusCode);
-            Assert.IsNotNull(values);
-            Assert.AreEqual(_context.Customers.Count(), values.Count());
+            var test = mockHandler.Protected()
+               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+            ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
+
+            Assert.AreEqual(HttpStatusCode.OK, test);
         }
 
         [Test]
