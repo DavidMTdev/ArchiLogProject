@@ -171,7 +171,7 @@ namespace Archi.Library.Extensions
                 {
                     expOr = exp[0];
                 }
-
+             
                 var lambda = Expression.Lambda<Func<TModel, bool>>(expOr, parameter);
                 result = result.Where(lambda);
             }
@@ -207,15 +207,8 @@ namespace Archi.Library.Extensions
 
         public static Expression LikeExpression<TModel>(ParameterExpression param, string property, string value)
         {
-            //var param = Expression.Parameter(typeof(TModel), "x");
             var propertyInfo = typeof(TModel).GetProperty(property, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
             var member = Expression.Property(param, propertyInfo);
-            
-            //var convert = Expression.Convert(member, propertyInfo.PropertyType);
-
-            var tt = propertyInfo.PropertyType;
-            var tttt = propertyInfo.PropertyType.Name;
-
 
             var startWith = value.StartsWith("*");
             var endsWith = value.EndsWith("*");
@@ -223,28 +216,25 @@ namespace Archi.Library.Extensions
 
             Expression constant;
             Expression convert;
+            Expression exp;
 
-            if (propertyInfo.PropertyType == typeof(int))
+            if (propertyInfo.PropertyType == typeof(int) || propertyInfo.PropertyType == typeof(int?))
             {
                 int num = int.Parse(searchValue);
                 constant = Expression.Constant(num);
                 convert = Expression.Convert(member, typeof(int));
             }
-            else if (propertyInfo.PropertyType == typeof(DateTime?))
+            else if (propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))
             {
                 DateTime datetime = DateTime.Parse(searchValue);
-                constant = Expression.Constant(searchValue);
-                convert = Expression.Convert(member, typeof(string));
+                constant = Expression.Constant(datetime);
+                convert = Expression.Convert(member, typeof(DateTime));
             }
             else
             {
                 constant = Expression.Constant(searchValue);
                 convert = Expression.Convert(member, typeof(string));
             }
-
-            //var constant = Expression.Constant(searchValue);
-
-            Expression exp;
 
             if (endsWith && startWith)
             {
@@ -259,16 +249,11 @@ namespace Archi.Library.Extensions
                 exp = Expression.Call(convert, "StartsWith", null, constant);
 
             }
-            /*else if (propertyInfo.PropertyType == typeof(DateTime?))
-            {
-                exp = Expression.Call(convert, "CompareTo", null, constant);
-            }*/
             else
             {
                 exp = Expression.Equal(convert, constant);
             }
 
-            //return Expression.Lambda<Func<TModel, bool>>(exp, param);
             return exp;
         }
     }
