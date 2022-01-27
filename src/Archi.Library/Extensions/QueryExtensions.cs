@@ -60,11 +60,11 @@ namespace Archi.Library.Extensions
                         }
                     }
                     return finalQuery;
-                } 
+                }
             }
             return (IOrderedQueryable<TModel>)query;
         }
-      
+
         public static IQueryable<dynamic> SelectFields<TModel>(this IQueryable<TModel> query, Params param)
         {
             if (param.HasFields())
@@ -88,32 +88,32 @@ namespace Archi.Library.Extensions
             return (IQueryable<dynamic>)query;
         }
 
-        public static IQueryable<TModel> Pagination<TModel>(this IQueryable<TModel> query, Params param, String URL,String QueryString, Microsoft.AspNetCore.Http.HttpResponse response)
+        public static IQueryable<TModel> Pagination<TModel>(this IQueryable<TModel> query, Params param, String URL, String QueryString, Microsoft.AspNetCore.Http.HttpResponse response)
         {
             if (param.HasRange())
             {
                 string Range = param.Range;
                 string[] RangeSplit = Range.Split('-');
-                int RangeValue = int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) +1;
+                int RangeValue = int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1;
                 int SkipValue = int.Parse(RangeSplit[0]);
                 int MaxRange = query.Count();
 
                 // Rel
-                string first = (SkipValue != 0) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue-1).ToString(), "first") + ", "
+                string first = (SkipValue != 0)
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue - 1).ToString(), "first") + ", "
                     : "";
-                string next = (int.Parse(RangeSplit[1]) != MaxRange) 
-                    ? URL + getRel(QueryString,RangeSplit[0],RangeSplit[1],(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) 
-                    ? MaxRange.ToString() 
-                    : (int.Parse(RangeSplit[1]) + RangeValue).ToString(),"next") + ", "
+                string next = (int.Parse(RangeSplit[1]) != MaxRange)
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (int.Parse(RangeSplit[1]) + 1).ToString(), (MaxRange < (int.Parse(RangeSplit[1]) + RangeValue))
+                    ? MaxRange.ToString()
+                    : (int.Parse(RangeSplit[1]) + RangeValue).ToString(), "next") + ", "
                     : "";
-                string last = (int.Parse(RangeSplit[1]) != MaxRange) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") 
-                    : "" ;
-                string prev = (SkipValue != 0) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 
-                    ? (SkipValue - RangeValue - 1).ToString() 
-                    : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "") 
+                string last = (int.Parse(RangeSplit[1]) != MaxRange)
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange - RangeValue + 1).ToString(), MaxRange.ToString(), "last")
+                    : "";
+                string prev = (SkipValue != 0)
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0
+                    ? (SkipValue - RangeValue - 1).ToString()
+                    : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "")
                     : "";
                 response.Headers.Add("Content-Range", $"{Range}/{MaxRange}");
                 response.Headers.Add("Accept-Range", $"Product 50");
@@ -153,13 +153,51 @@ namespace Archi.Library.Extensions
                 if (typeof(Params).GetProperty(search.Key, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance) == null)
                 {
                     opts.Add(search.Key, search.Value.ToString().Split(','));
+
+                    /*{
+                        "firstname": ["david", "seb"],
+                        "lastname": "texier",
+                        "id": ["[1", "10]"]
+                    }*/
                 }
             }
 
-            var likeExpressions = opts.Select(d => d.Value.Select(f => LikeExpression<TModel>(parameter, d.Key, f)));
-            Expression expOr;
+            //var likeExpression = opts.Select(d => d.Value.Select(f => LikeExpression<TModel>(parameter, d.Key, f)));
+            //Expression likeExpressions;
+            //Expression rangeExpression;
 
-            foreach (var likeExpression in likeExpressions)
+            
+
+            foreach (var item in opts)
+            {
+                Expression exp;
+                if (item.Value[0].Contains("["))
+                {
+                    exp = RangeExpression<TModel>(parameter, item.Key, item.Value);
+                }
+                else
+                {
+                    var likeExpressions = item.Value.Select(f => LikeExpression<TModel>(parameter, item.Key, f)).ToArray();
+
+                    //var exp = likeExpressions.ToArray();
+                    if (likeExpressions.Length > 1)
+                    {
+                        exp = Expression.Or(likeExpressions[0], likeExpressions[1]);
+                        exp = likeExpressions.Skip(2).Aggregate(exp, (current, expression) => Expression.Or(current, expression));
+                    }
+                    else
+                    {
+                        exp = likeExpressions[0];
+                    }
+                }
+
+                var lambda = Expression.Lambda<Func<TModel, bool>>(exp, parameter);
+                result = result.Where(lambda);
+            }
+            //[ ["x.firstame == 'david'", "x.firstame == 'sebd'"] , ["x.lastname == 'texier'"] , ["x.id == '1'", "x.id == '10'"]]
+
+
+            /*foreach (var likeExpression in likeExpressions)
             {
                 var exp = likeExpression.ToArray();
                 if (exp.Length > 1)
@@ -171,10 +209,10 @@ namespace Archi.Library.Extensions
                 {
                     expOr = exp[0];
                 }
-             
+
                 var lambda = Expression.Lambda<Func<TModel, bool>>(expOr, parameter);
                 result = result.Where(lambda);
-            }
+            }*/
 
             return result;
         }
@@ -188,7 +226,7 @@ namespace Archi.Library.Extensions
                 if (typeof(Params).GetProperty(search.Key, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance) == null)
                 {
                     opts.Add(search.Key, search.Value);
-                } 
+                }
             }
 
             var result = query;
@@ -202,7 +240,51 @@ namespace Archi.Library.Extensions
             }
 
             return result;
-            
+
+        }
+
+        public static Expression RangeExpression<TModel>(ParameterExpression param, string property, string[] value)
+        {
+            var propertyInfo = typeof(TModel).GetProperty(property, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            var member = Expression.Property(param, propertyInfo);
+
+            var lessValue = value[0].Replace("[", "");
+            var greaterValue = value[1].Replace("]", "");
+
+            Expression exp;
+            Expression constant;
+
+            //Expression lessValueConstant = Expression.Constant(int.Parse(lessValue));
+            //Expression greaterValueConstant = Expression.Constant(int.Parse(greaterValue));
+
+            Expression convert = Expression.Convert(member, typeof(int));
+
+            if (!string.IsNullOrWhiteSpace(lessValue) && !string.IsNullOrWhiteSpace(greaterValue))
+            {
+                constant = Expression.Constant(int.Parse(greaterValue));
+                Expression expLessThanOrEqual = Expression.LessThanOrEqual(convert, constant);
+
+                constant = Expression.Constant(int.Parse(lessValue));
+                Expression expGreaterThanOrEqual = Expression.GreaterThanOrEqual(convert, constant);
+
+                exp = Expression.And(expLessThanOrEqual, expGreaterThanOrEqual);
+            }
+            else if (string.IsNullOrWhiteSpace(lessValue) && !string.IsNullOrWhiteSpace(greaterValue))
+            {
+                constant = Expression.Constant(int.Parse(greaterValue));
+                exp = Expression.LessThanOrEqual(convert, constant);
+            }
+            else if (!string.IsNullOrWhiteSpace(lessValue) && string.IsNullOrWhiteSpace(greaterValue))
+            {
+                constant = Expression.Constant(int.Parse(lessValue));
+                exp = Expression.GreaterThanOrEqual(convert, constant);
+            }
+            else
+            {
+                exp = Expression.Empty();
+            }
+
+            return exp;
         }
 
         public static Expression LikeExpression<TModel>(ParameterExpression param, string property, string value)
@@ -212,6 +294,7 @@ namespace Archi.Library.Extensions
 
             var startWith = value.StartsWith("*");
             var endsWith = value.EndsWith("*");
+
             var searchValue = value.Replace("*", "");
 
             Expression constant;
