@@ -1,3 +1,4 @@
+using Archi.library.Controllers;
 using Archi.Library.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -60,11 +61,11 @@ namespace Archi.Library.Extensions
                         }
                     }
                     return finalQuery;
-                } 
+                }
             }
             return (IOrderedQueryable<TModel>)query;
         }
-      
+
         public static IQueryable<dynamic> SelectFields<TModel>(this IQueryable<TModel> query, Params param)
         {
             if (param.HasFields())
@@ -88,32 +89,32 @@ namespace Archi.Library.Extensions
             return (IQueryable<dynamic>)query;
         }
 
-        public static IQueryable<TModel> Pagination<TModel>(this IQueryable<TModel> query, Params param, String URL,String QueryString, Microsoft.AspNetCore.Http.HttpResponse response)
+        public static IQueryable<TModel> Pagination<TModel>(this IQueryable<TModel> query, Params param, String URL, String QueryString, Microsoft.AspNetCore.Http.HttpResponse response)
         {
             if (param.HasRange())
             {
                 string Range = param.Range;
                 string[] RangeSplit = Range.Split('-');
-                int RangeValue = int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) +1;
+                int RangeValue = int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1;
                 int SkipValue = int.Parse(RangeSplit[0]);
                 int MaxRange = query.Count();
 
                 // Rel
-                string first = (SkipValue != 0) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue-1).ToString(), "first") + ", "
+                string first = (SkipValue != 0)
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue - 1).ToString(), "first") + ", "
                     : "";
-                string next = (int.Parse(RangeSplit[1]) != MaxRange) 
-                    ? URL + getRel(QueryString,RangeSplit[0],RangeSplit[1],(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) 
-                    ? MaxRange.ToString() 
-                    : (int.Parse(RangeSplit[1]) + RangeValue).ToString(),"next") + ", "
+                string next = (int.Parse(RangeSplit[1]) != MaxRange)
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (int.Parse(RangeSplit[1]) + 1).ToString(), (MaxRange < (int.Parse(RangeSplit[1]) + RangeValue))
+                    ? MaxRange.ToString()
+                    : (int.Parse(RangeSplit[1]) + RangeValue).ToString(), "next") + ", "
                     : "";
-                string last = (int.Parse(RangeSplit[1]) != MaxRange) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") 
-                    : "" ;
-                string prev = (SkipValue != 0) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 
-                    ? (SkipValue - RangeValue - 1).ToString() 
-                    : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "") 
+                string last = (int.Parse(RangeSplit[1]) != MaxRange)
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange - RangeValue + 1).ToString(), MaxRange.ToString(), "last")
+                    : "";
+                string prev = (SkipValue != 0)
+                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0
+                    ? (SkipValue - RangeValue - 1).ToString()
+                    : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "")
                     : "";
                 response.Headers.Add("Content-Range", $"{Range}/{MaxRange}");
                 response.Headers.Add("Accept-Range", $"Product 50");
@@ -171,7 +172,7 @@ namespace Archi.Library.Extensions
                 {
                     expOr = exp[0];
                 }
-             
+
                 var lambda = Expression.Lambda<Func<TModel, bool>>(expOr, parameter);
                 result = result.Where(lambda);
             }
@@ -188,7 +189,7 @@ namespace Archi.Library.Extensions
                 if (typeof(Params).GetProperty(search.Key, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance) == null)
                 {
                     opts.Add(search.Key, search.Value);
-                } 
+                }
             }
 
             var result = query;
@@ -202,13 +203,20 @@ namespace Archi.Library.Extensions
             }
 
             return result;
-            
+
         }
 
         public static Expression LikeExpression<TModel>(ParameterExpression param, string property, string value)
         {
+            //var param = Expression.Parameter(typeof(TModel), "x");
             var propertyInfo = typeof(TModel).GetProperty(property, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
             var member = Expression.Property(param, propertyInfo);
+
+            //var convert = Expression.Convert(member, propertyInfo.PropertyType);
+
+            var tt = propertyInfo.PropertyType;
+            var tttt = propertyInfo.PropertyType.Name;
+
 
             var startWith = value.StartsWith("*");
             var endsWith = value.EndsWith("*");
@@ -216,25 +224,28 @@ namespace Archi.Library.Extensions
 
             Expression constant;
             Expression convert;
-            Expression exp;
 
-            if (propertyInfo.PropertyType == typeof(int) || propertyInfo.PropertyType == typeof(int?))
+            if (propertyInfo.PropertyType == typeof(int))
             {
                 int num = int.Parse(searchValue);
                 constant = Expression.Constant(num);
                 convert = Expression.Convert(member, typeof(int));
             }
-            else if (propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))
+            else if (propertyInfo.PropertyType == typeof(DateTime?))
             {
                 DateTime datetime = DateTime.Parse(searchValue);
-                constant = Expression.Constant(datetime);
-                convert = Expression.Convert(member, typeof(DateTime));
+                constant = Expression.Constant(searchValue);
+                convert = Expression.Convert(member, typeof(string));
             }
             else
             {
                 constant = Expression.Constant(searchValue);
                 convert = Expression.Convert(member, typeof(string));
             }
+
+            //var constant = Expression.Constant(searchValue);
+
+            Expression exp;
 
             if (endsWith && startWith)
             {
@@ -249,12 +260,38 @@ namespace Archi.Library.Extensions
                 exp = Expression.Call(convert, "StartsWith", null, constant);
 
             }
+            /*else if (propertyInfo.PropertyType == typeof(DateTime?))
+            {
+                exp = Expression.Call(convert, "CompareTo", null, constant);
+            }*/
             else
             {
                 exp = Expression.Equal(convert, constant);
             }
 
+            //return Expression.Lambda<Func<TModel, bool>>(exp, param);
             return exp;
+        }
+
+
+        public static dynamic DefineValues(string scheme, string hostValue, string pathValue, string value)
+        {
+            var Url = scheme + "://" + hostValue + pathValue;
+            var QueryString = value;
+
+            var Order = "none";
+            if (QueryString.ToLower().Contains("asc") && QueryString.ToLower().Contains("desc"))
+            {
+                Order = (QueryString.ToLower().IndexOf("asc", 0) < QueryString.ToLower().IndexOf("desc", 0)) ? "ascToDesc" : "descToAsc";
+            } else if (QueryString.ToLower().Contains("asc"))
+            {
+                Order = "asc";
+            } else
+            {
+                Order = "desc";
+            }
+
+            return new { Url, QueryString, Order};
         }
     }
 }
