@@ -32,30 +32,17 @@ namespace Archi.library.Controllers
             {
                 var result2 = _context.Set<TModel>().Where(x => x.Active == true);
 
-            dynamic defaultValues = QueryExtensions.DefineValues(this.Request.Scheme, this.Request.Host.Value, this.Request.Path.Value, this.Request.QueryString.Value);
+                dynamic defaultValues = QueryExtensions.DefineValues(this.Request.Scheme, this.Request.Host.Value, this.Request.Path.Value, this.Request.QueryString.Value);
 
-            string URL = defaultValues.Url;
-            string QueryString = defaultValues.QueryString;
-            
-            string order = defaultValues.Order;
-            
-            var resultOrd = result2.Sort(param, order);
-            
-            string Range = param.Range;
-            if (Range != null)
-            {
-                string[] RangeSplit = Range.Split('-');
-                if (int.Parse(RangeSplit[0]) > int.Parse(RangeSplit[1]) || int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1 > 50)
-                {
-                    return BadRequest();
-                }
-            }
+                string URL = defaultValues.Url;
+                string QueryString = defaultValues.QueryString;
+                string order = defaultValues.Order;
+                string Range = param.Range;
 
-                var resultFilter = resultOrd.Filter(param, this.Request.Query);
-
-                var resultPagi = resultFilter.Pagination(param, URL, QueryString, Response);
-
-                var result = resultPagi.SelectFields(param);
+                var resultOrd = result2.QuerySort(param, order);
+                var resultFilter = resultOrd.QueryFilter(param, this.Request.Query);
+                var resultPagi = resultFilter.QueryPaging(param, URL, QueryString, Response);
+                var result = resultPagi.QueryFields(param);
 
                 return await result.ToListAsync();
             }
@@ -69,22 +56,28 @@ namespace Archi.library.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<dynamic>>> GetBySearch([FromQuery] Params param)
         {
-            var result2 = _context.Set<TModel>().Where(x => x.Active == true);
+            try
+            {
+                var result2 = _context.Set<TModel>().Where(x => x.Active == true);
 
-            dynamic defaultValues = QueryExtensions.DefineValues(this.Request.Scheme, this.Request.Host.Value, this.Request.Path.Value, this.Request.QueryString.Value);
+                dynamic defaultValues = QueryExtensions.DefineValues(this.Request.Scheme, this.Request.Host.Value, this.Request.Path.Value, this.Request.QueryString.Value);
 
-            string URL = defaultValues.Url;
-            string QueryString = defaultValues.QueryString;
+                string URL = defaultValues.Url;
+                string QueryString = defaultValues.QueryString;
+                string order = defaultValues.Order;
+                string Range = param.Range;
 
-            string order = defaultValues.Order;
+                var resultOrd = result2.QuerySort(param, order);
+                var resultSearch = resultOrd.QuerySearch(param, this.Request.Query);
+                var resultPagi = resultSearch.QueryPaging(param, URL, QueryString, Response);
+                var result = resultPagi.QueryFields(param);
 
-            var resultOrd = result2.Sort(param, order);
-
-            var resultSearch = resultOrd.QuerySearch(param, this.Request.Query);
-
-            var result = resultSearch.SelectFields(param);
-
-            return await result.ToListAsync();
+                return await result.ToListAsync();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         // GET:/[controller]/id
@@ -99,13 +92,6 @@ namespace Archi.library.Controllers
                 return NotFound();
             }
 
-            /*var item = await _context.Set<TModel>().FindAsync(id);
-
-            if (item == null || item.Active == false)
-            {
-                return NotFound();
-            }
-            */
             return item;
         }
 

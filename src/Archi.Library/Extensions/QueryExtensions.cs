@@ -16,7 +16,7 @@ namespace Archi.Library.Extensions
 {
     public static class QueryExtensions
     {
-        public static IOrderedQueryable<TModel> Sort<TModel>(this IQueryable<TModel> query, Params param, string order)
+        public static IOrderedQueryable<TModel> QuerySort<TModel>(this IQueryable<TModel> query, Params param, string order)
         {
             if (param.HasOrder())
             {
@@ -66,7 +66,7 @@ namespace Archi.Library.Extensions
             return (IOrderedQueryable<TModel>)query;
         }
 
-        public static IQueryable<dynamic> SelectFields<TModel>(this IQueryable<TModel> query, Params param)
+        public static IQueryable<dynamic> QueryFields<TModel>(this IQueryable<TModel> query, Params param)
         {
             if (param.HasFields())
             {
@@ -89,12 +89,18 @@ namespace Archi.Library.Extensions
             return (IQueryable<dynamic>)query;
         }
 
-        public static IQueryable<TModel> Pagination<TModel>(this IQueryable<TModel> query, Params param, String URL, String QueryString, Microsoft.AspNetCore.Http.HttpResponse response)
+        public static IQueryable<TModel> QueryPaging<TModel>(this IQueryable<TModel> query, Params param, String URL, String QueryString, HttpResponse response)
         {
             if (param.HasRange())
             {
                 string Range = param.Range;
+
                 string[] RangeSplit = Range.Split('-');
+                if (int.Parse(RangeSplit[0]) > int.Parse(RangeSplit[1]) || int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1 > 50)
+                {
+                    throw new ArgumentException();
+                }
+
                 int RangeValue = int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) + 1;
                 int SkipValue = int.Parse(RangeSplit[0]);
                 int MaxRange = query.Count();
@@ -103,25 +109,31 @@ namespace Archi.Library.Extensions
                 string first = (SkipValue != 0)
                     ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue - 1).ToString(), "first") + ", "
                     : "";
+
                 string next = (int.Parse(RangeSplit[1]) != MaxRange)
                     ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (int.Parse(RangeSplit[1]) + 1).ToString(), (MaxRange < (int.Parse(RangeSplit[1]) + RangeValue))
                     ? MaxRange.ToString()
                     : (int.Parse(RangeSplit[1]) + RangeValue).ToString(), "next") + ", "
                     : "";
+
                 string last = (int.Parse(RangeSplit[1]) != MaxRange)
                     ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange - RangeValue + 1).ToString(), MaxRange.ToString(), "last")
                     : "";
+
                 string prev = (SkipValue != 0)
                     ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0
                     ? (SkipValue - RangeValue - 1).ToString()
                     : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "")
                     : "";
+
                 response.Headers.Add("Content-Range", $"{Range}/{MaxRange}");
                 response.Headers.Add("Accept-Range", $"Product 50");
                 response.Headers.Add("Link", $"{first}{prev}{next}{last}");
+
                 return query.Skip(SkipValue).Take(RangeValue);
             }
-            return (IQueryable<TModel>)query;
+
+            return query;
         }
 
         public static string getRel(string QueryString, string initStart, string initEnd, string ReplaceStart, string ReplaceEnd, string rel)
@@ -143,7 +155,7 @@ namespace Archi.Library.Extensions
             return lambda;
         }
 
-        public static IQueryable<TModel> Filter<TModel>(this IQueryable<TModel> query, Params param, IQueryCollection requestQuery)
+        public static IQueryable<TModel> QueryFilter<TModel>(this IQueryable<TModel> query, Params param, IQueryCollection requestQuery)
         {
             var result = query;
             var opts = new Dictionary<string, StringValues>();
@@ -188,7 +200,9 @@ namespace Archi.Library.Extensions
 
         public static IQueryable<TModel> QuerySearch<TModel>(this IQueryable<TModel> query, Params param, IQueryCollection searchFields)
         {
+            var result = query;
             var opts = new Dictionary<string, StringValues>();
+            var parameter = Expression.Parameter(typeof(TModel), "x");
 
             foreach (KeyValuePair<string, StringValues> search in searchFields)
             {
@@ -198,18 +212,14 @@ namespace Archi.Library.Extensions
                 }
             }
 
-            var result = query;
-            var parameter = Expression.Parameter(typeof(TModel), "x");
-            var test = opts.Select(f => LikeExpression<TModel>(parameter, f.Key, f.Value));
-
-            foreach (var exp in test)
+            var likeExpressions = opts.Select(f => LikeExpression<TModel>(parameter, f.Key, f.Value));
+            foreach (var exp in likeExpressions)
             {
                 var lambda = Expression.Lambda<Func<TModel, bool>>(exp, parameter);
                 result = result.Where(lambda);
             }
 
             return result;
-
         }
 
         public static Expression RangeExpression<TModel>(ParameterExpression param, string property, string[] value)
