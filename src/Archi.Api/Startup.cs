@@ -25,8 +25,16 @@ namespace Archi.Api
 
         public Startup(IConfiguration options) : base(options) {}
 
-        public override void ConfigServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers();
+            services.AddApiVersioning();
+
+            //this.ConfigServices(services);
+        //}
+
+        //public override void ConfigServices(IServiceCollection services)
+        //{
             services.AddDbContext<ArchiDBContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("Archi"));

@@ -4,14 +4,16 @@ using Archi.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Archi.Api.Migrations
 {
     [DbContext(typeof(ArchiDBContext))]
-    partial class ArchiDBContextModelSnapshot : ModelSnapshot
+    [Migration("20220127094052_AddPropCreatedAt")]
+    partial class AddPropCreatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

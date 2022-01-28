@@ -4,12 +4,16 @@ using Archi.Library.Models;
 using Archi.Test.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using Moq.Protected;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Archi.Test
@@ -27,15 +31,16 @@ namespace Archi.Test
         }
 
         [Test]
-        public async Task TestGetAll()
+        public Task TestGetAll()
         {
-            var actionResult = await _controller.GetAll(new Params(), "https://locaost:8080/api/v1/customers");
-            //var result = actionResult.Result as ObjectResult;
-            var values = actionResult.Value as IEnumerable<Customer>;
+            var mockHandler = new Mock<HttpMessageHandler>();
 
-            //Assert.AreEqual((int)HttpStatusCode.OK, result.StatusCode);
-            Assert.IsNotNull(values);
-            Assert.AreEqual(_context.Customers.Count(), values.Count());
+            var test = mockHandler.Protected()
+               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+            ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
+
+            Assert.AreEqual(HttpStatusCode.OK, test);
         }
 
         [Test]
@@ -46,13 +51,14 @@ namespace Archi.Test
             Assert.AreEqual((int)HttpStatusCode.Created, result.StatusCode);
         }
 
-        /*[Test]
+        [Test]
         public async Task TestGetID()
         {
             var post = await _controller.GetByID(1);
             var result = post.Result as ObjectResult;
+            // Console.WriteLine(result;
             Assert.AreEqual((int)HttpStatusCode.OK, result.StatusCode);
-        }*/
+        }
 
         /*[Test]
         public async Task TestDelete()

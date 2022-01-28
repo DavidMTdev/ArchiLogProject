@@ -52,6 +52,7 @@ namespace Archi.library.Data
                 if (item.Entity is BaseModel model)
                 {
                     model.Active = true;
+                    model.CreatedAt = DateTime.Now.Date;
                 }
             }
         }
