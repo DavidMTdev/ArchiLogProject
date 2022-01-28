@@ -42,9 +42,11 @@ namespace Archi.Library
                 };
             });
 
+          
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

@@ -8,12 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Archi.Library.Models;
 using Archi.Library.Extensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Archi.library.Controllers
 {
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiVersion("1.0")]
     [ApiController]
+    [Authorize]
     public class BaseController<TContext, TModel> : ControllerBase where TContext : BaseDbContext where TModel : BaseModel
     {
         protected readonly TContext _context;
