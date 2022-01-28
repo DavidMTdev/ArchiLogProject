@@ -4,17 +4,17 @@ using Archi.Library.Models;
 using Archi.Test.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Moq;
-using Moq.Protected;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace Archi.Test
 {
@@ -31,16 +31,19 @@ namespace Archi.Test
         }
 
         [Test]
-        public Task TestGetAll()
+        public async Task TestGetAll()
         {
-            var mockHandler = new Mock<HttpMessageHandler>();
+            var config = new HttpConfiguration();
+            //configure web api
+            config.MapHttpAttributeRoutes();
 
-            var test = mockHandler.Protected()
-               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
-            ItExpr.IsAny<CancellationToken>())
-               .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
-
-            Assert.AreEqual(HttpStatusCode.OK, test);
+            using (var client = new HttpClient())
+            {
+                string url = "https://localhost:44316/api/v1/customers/";
+                var response = await client.GetAsync(url);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                var result = await response.Content.ReadAsStringAsync();
+            }
         }
 
         [Test]
@@ -54,10 +57,18 @@ namespace Archi.Test
         [Test]
         public async Task TestGetID()
         {
-            var post = await _controller.GetByID(1);
-            var result = post.Result as ObjectResult;
-            // Console.WriteLine(result;
-            Assert.AreEqual((int)HttpStatusCode.OK, result.StatusCode);
+            var config = new HttpConfiguration();
+            //configure web api
+            config.MapHttpAttributeRoutes();
+
+            using (var client = new HttpClient())
+            {
+                string url = "https://localhost:44316/api/v1/customers/5";
+                var response = await client.GetAsync(url);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                var result = await response.Content.ReadAsStringAsync();
+                var jsonData = json
+            }
         }
 
         /*[Test]
