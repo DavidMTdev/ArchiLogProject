@@ -97,24 +97,32 @@ namespace Archi.Library.Extensions
                 int RangeValue = int.Parse(RangeSplit[1]) - int.Parse(RangeSplit[0]) +1;
                 int SkipValue = int.Parse(RangeSplit[0]);
                 int MaxRange = query.Count();
+                bool testprev = SkipValue != 0 ? true : false;
+                bool testnext = (int.Parse(RangeSplit[1]) != MaxRange) ? true : false;
 
                 // Rel
-                string first = (SkipValue != 0) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue-1).ToString(), "first") + ", "
+                string first = testprev
+                    ? URL + getRel(QueryString, RangeSplit, "0", (RangeValue-1).ToString(), "first") + ", "
                     : "";
-                string next = (int.Parse(RangeSplit[1]) != MaxRange) 
-                    ? URL + getRel(QueryString,RangeSplit[0],RangeSplit[1],(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) 
+
+                string last = testnext
+                    ? URL + getRel(QueryString, RangeSplit, (MaxRange - RangeValue + 1).ToString(), MaxRange.ToString(), "last")
+                    : "";
+
+                string next = testnext
+                    ? URL + getRel(QueryString,RangeSplit,(int.Parse(RangeSplit[1])+1).ToString(),
+                    (MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) 
                     ? MaxRange.ToString() 
                     : (int.Parse(RangeSplit[1]) + RangeValue).ToString(),"next") + ", "
                     : "";
-                string last = (int.Parse(RangeSplit[1]) != MaxRange) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") 
-                    : "" ;
-                string prev = (SkipValue != 0) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 
+
+                string prev = testprev
+                    ? URL + getRel(QueryString, RangeSplit, 
+                    (SkipValue - RangeValue) != 0 
                     ? (SkipValue - RangeValue - 1).ToString() 
                     : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "") 
                     : "";
+
                 response.Headers.Add("Content-Range", $"{Range}/{MaxRange}");
                 response.Headers.Add("Accept-Range", $"Product 50");
                 response.Headers.Add("Link", $"{first}{prev}{next}{last}");
@@ -123,10 +131,10 @@ namespace Archi.Library.Extensions
             return (IQueryable<TModel>)query;
         }
 
-        public static string getRel(string QueryString, string initStart, string initEnd, string ReplaceStart, string ReplaceEnd, string rel)
+        public static string getRel(string QueryString, string[] Tab, string ReplaceStart, string ReplaceEnd, string rel)
         {
-            string page = QueryString.Replace(initStart + "-", ReplaceStart + "-");
-            page = page.Replace("-" + initEnd, "-" + ReplaceEnd);
+            string page = QueryString.Replace(Tab[0] + "-", ReplaceStart + "-");
+            page = page.Replace("-" + Tab[1], "-" + ReplaceEnd);
             page += $"; rel=\"{rel}\"";
             return page;
         }
