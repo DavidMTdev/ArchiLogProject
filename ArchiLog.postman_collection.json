@@ -1,0 +1,627 @@
+{
+	"info": {
+		"_postman_id": "0c665f04-a873-4452-8de4-33e4888d5a24",
+		"name": "ArchiLog",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Sort",
+			"item": [
+				{
+					"name": "Ascending",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?asc=firstname",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "asc",
+									"value": "firstname"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Descending",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?desc=firstname",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "desc",
+									"value": "firstname"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Asc & Desc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?asc=firstname&desc=lastname",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "asc",
+									"value": "firstname"
+								},
+								{
+									"key": "desc",
+									"value": "lastname"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Desc & Asc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?desc=firstname&asc=lastname",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "desc",
+									"value": "firstname"
+								},
+								{
+									"key": "asc",
+									"value": "lastname"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Retour Partiel",
+			"item": [
+				{
+					"name": "return id & firstname",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?fields=id,lastname",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "desc",
+									"value": "id",
+									"disabled": true
+								},
+								{
+									"key": "asc",
+									"value": "firstname",
+									"disabled": true
+								},
+								{
+									"key": "fields",
+									"value": "id,lastname"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "return id firstname email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?fields=id,firstname,email",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "id,firstname,email"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Filter",
+			"item": [
+				{
+					"name": "Filter string",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?firstname=thomas",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "firstname",
+									"value": "thomas,teixeira",
+									"disabled": true
+								},
+								{
+									"key": "firstname",
+									"value": "thomas"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter int",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?id=5,10",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "id",
+									"value": "5,10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter int range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?id=[,5]",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "[5,]",
+									"disabled": true
+								},
+								{
+									"key": "id",
+									"value": "[,5]"
+								},
+								{
+									"key": "id",
+									"value": "[5,10]",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?createdAt=27-01-2022",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "createdAt",
+									"value": "27-01-2022"
+								},
+								{
+									"key": "createdAt",
+									"value": "27-01-2022,01-01-0001",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter date range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?createdAt=[25-01-2022,]",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "createdAt",
+									"value": "[25-01-2022,28-01-2022]",
+									"disabled": true
+								},
+								{
+									"key": "createdAt",
+									"value": "[,28-01-2022]",
+									"disabled": true
+								},
+								{
+									"key": "createdAt",
+									"value": "[25-01-2022,]"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers/search?firstname=thomas",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers",
+								"search"
+							],
+							"query": [
+								{
+									"key": "firstname",
+									"value": "*tho*",
+									"disabled": true
+								},
+								{
+									"key": "firstname",
+									"value": "*mas 1",
+									"disabled": true
+								},
+								{
+									"key": "firstname",
+									"value": "dav*",
+									"disabled": true
+								},
+								{
+									"key": "firstname",
+									"value": "thomas"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pagination",
+			"item": [
+				{
+					"name": "Customers Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}:{{port}}/api/v1/Customers?Range=1-3&fields=id,firstname,lastname&asc=firstname&desc=id",
+							"host": [
+								"{{url}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"Customers"
+							],
+							"query": [
+								{
+									"key": "Range",
+									"value": "1-3"
+								},
+								{
+									"key": "fields",
+									"value": "id,firstname,lastname"
+								},
+								{
+									"key": "asc",
+									"value": "firstname"
+								},
+								{
+									"key": "desc",
+									"value": "id"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customers",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Lastname\": \"David 1\",\r\n    \"Firstname\": \"Teixeira 1\",\r\n    \"Email\": \"david1@teixeira1.com\",\r\n    \"phone\": \"0688336644\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/api/v1/Customers",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"v1",
+						"Customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customers",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/api/v1/Customers",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"v1",
+						"Customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customers By ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}:{{port}}/api/v1/Customers/10",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"v1",
+						"Customers",
+						"10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customers By ID",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}:{{port}}/api/v1/Customers/1002",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"v1",
+						"Customers",
+						"1002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customers By ID",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Lastname\": \"Test 2\",\r\n    \"Firstname\": \"test\",\r\n    \"Email\": \"test2@test.com\",\r\n    \"Phone\": null,\r\n    \"ID\": 1002,\r\n    \"Active\": true,\r\n    \"DeletedAt\": null,\r\n    \"CreatedAt\": \"2022-01-27T00:00:00\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/api/Customers/1002",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"Customers",
+						"1002"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJUZXN0LmNvbSIsImF1ZCI6IlRlc3QuY29tIiwiaWF0IjoxNTE2MjM5MDIyfQ.2C_s_sBlORbI3XWOga3Gli-MI0OZxIIAurVvLAO5D-M",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "https://localhost",
+			"type": "string"
+		},
+		{
+			"key": "port",
+			"value": "44316",
+			"type": "string"
+		}
+	]
+}
