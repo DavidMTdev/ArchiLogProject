@@ -29,16 +29,8 @@ namespace Archi.Api
 
         public Startup(IConfiguration options) : base(options) {}
 
-        public void ConfigureServices(IServiceCollection services)
+        public override void ConfigServices(IServiceCollection services)
         {
-            services.AddControllers();
-            services.AddApiVersioning();
-
-            //this.ConfigServices(services);
-            //}
-
-            //public override void ConfigServices(IServiceCollection services)
-            //{
 
             // Add Authentication services
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -61,11 +53,6 @@ namespace Archi.Api
             {
                 options.UseSqlServer(Configuration.GetConnectionString("Archi"));
             });
-
-            /*services.AddSwaggerGen(x =>
-            {
-                x.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-            });*/
 
             services.AddSwaggerGen(options =>
             {
