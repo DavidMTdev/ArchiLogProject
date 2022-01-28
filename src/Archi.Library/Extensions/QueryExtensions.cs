@@ -108,20 +108,20 @@ namespace Archi.Library.Extensions
                 bool testnext = (int.Parse(RangeSplit[1]) != MaxRange) ? true : false;
 
                 // Rel
-                string first = (SkipValue != 0) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], "0", (RangeValue-1).ToString(), "first") + ", "
+                string first = testprev
+                    ? URL + getRel(QueryString, RangeSplit, "0", (RangeValue-1).ToString(), "first") + ", "
                     : "";
-                string next = (int.Parse(RangeSplit[1]) != MaxRange) 
-                    ? URL + getRel(QueryString,RangeSplit[0],RangeSplit[1],(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) 
+                string next = testnext
+                    ? URL + getRel(QueryString,RangeSplit,(int.Parse(RangeSplit[1])+1).ToString(),(MaxRange < (int.Parse(RangeSplit[1]) + RangeValue)) 
                     ? MaxRange.ToString() 
                     : (int.Parse(RangeSplit[1]) + RangeValue).ToString(),"next") + ", "
                     : "";
-                string last = (int.Parse(RangeSplit[1]) != MaxRange) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") 
+                string last = testnext
+                    ? URL + getRel(QueryString, RangeSplit, (MaxRange-RangeValue+1).ToString(), MaxRange.ToString(), "last") 
                     : "" ;
-                string prev = (SkipValue != 0) 
-                    ? URL + getRel(QueryString, RangeSplit[0], RangeSplit[1], (SkipValue - RangeValue) != 0 
-                    ? (SkipValue - RangeValue - 1).ToString() 
+                string prev = testprev
+                    ? URL + getRel(QueryString, RangeSplit, (SkipValue - RangeValue) >= 0 
+                    ? (SkipValue - RangeValue).ToString() 
                     : "0", (SkipValue - 1).ToString(), "prev") + (next != "" ? ", " : "") 
                     : "";
 
